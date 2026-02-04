@@ -24,5 +24,6 @@ output/*.json
 .DS_Store
 Thumbs.db
 
-# Optional: ignore sample input if you don't want to commit Excel files
-# input/*.xlsx
+# Input (do not commit user/sample Excel files)
+input/*.xlsx
+input/*.xls
