@@ -1,0 +1,1314 @@
+<!DOCTYPE html>
+<html lang="en">
+<head>
+  <meta charset="UTF-8">
+  <meta name="viewport" content="width=device-width, initial-scale=1.0">
+  <title>Excel Comparison Tool</title>
+  <link rel="stylesheet" href="https://cdnjs.cloudflare.com/ajax/libs/font-awesome/6.4.0/css/all.min.css">
+  <style>
+    :root {
+      --primary: #2563eb;
+      --primary-dark: #1d4ed8;
+      --primary-light: #eff6ff;
+      --card-bg: #ffffff;
+      --card-shadow: 0 1px 3px rgba(0,0,0,.06);
+      --card-shadow-hover: 0 4px 12px rgba(0,0,0,.08);
+      --border: #e2e8f0;
+      --text: #1e293b;
+      --text-muted: #64748b;
+      --tab-inactive: #f1f5f9;
+      --added: #22c55e;
+      --removed: #ef4444;
+      --modified: #eab308;
+      --radius: 12px;
+      --radius-sm: 8px;
+    }
+    * { box-sizing: border-box; }
+    body {
+      font-family: "Segoe UI", system-ui, -apple-system, sans-serif;
+      background: #f1f5f9;
+      color: var(--text);
+      margin: 0;
+      min-height: 100vh;
+      line-height: 1.5;
+      -webkit-font-smoothing: antialiased;
+    }
+    button:focus-visible, .tab:focus-visible, .drop-zone:focus-visible, input:focus-visible, select:focus-visible {
+      outline: 2px solid var(--primary);
+      outline-offset: 2px;
+    }
+
+    /* Header */
+    .header {
+      display: flex;
+      align-items: center;
+      justify-content: space-between;
+      padding: 1rem 1.5rem;
+      background: var(--card-bg);
+      border-bottom: 1px solid var(--border);
+      box-shadow: var(--card-shadow);
+    }
+    .header-left {
+      display: flex;
+      align-items: center;
+      gap: 0.75rem;
+    }
+    .header-icon {
+      width: 44px;
+      height: 44px;
+      background: var(--primary);
+      border-radius: 10px;
+      display: flex;
+      align-items: center;
+      justify-content: center;
+      color: white;
+      font-size: 1.25rem;
+    }
+    .header-title { font-size: 1.25rem; font-weight: 700; margin: 0; color: var(--text); }
+    .header-subtitle { font-size: 0.8125rem; color: var(--text-muted); margin: 0.25rem 0 0 0; }
+    .header-right {
+      display: flex;
+      align-items: center;
+      gap: 1rem;
+    }
+    .brand-text { text-align: right; }
+    .brand-name { font-size: 1.125rem; font-weight: 700; color: var(--primary); margin: 0; }
+    .brand-powered { font-size: 0.6875rem; color: var(--text-muted); margin: 0; text-transform: uppercase; letter-spacing: 0.02em; }
+    .brand-avatar {
+      width: 40px;
+      height: 40px;
+      border-radius: 50%;
+      background: var(--primary);
+      color: white;
+      display: flex;
+      align-items: center;
+      justify-content: center;
+      font-weight: 700;
+      font-size: 0.875rem;
+    }
+
+    /* Excel Comparison & Results / Report tabs */
+    .tabs {
+      display: flex;
+      gap: 0;
+      padding: 5px;
+      margin: 1rem 1.5rem;
+      max-width: 380px;
+      background: #e2e8f0;
+      border-radius: var(--radius);
+      box-shadow: inset 0 1px 2px rgba(0,0,0,.06);
+    }
+    .tab {
+      flex: 1;
+      display: flex;
+      align-items: center;
+      justify-content: center;
+      gap: 0.5rem;
+      padding: 0.5rem 1rem;
+      background: transparent;
+      color: var(--text-muted);
+      border: none;
+      font-size: 0.8125rem;
+      font-weight: 600;
+      cursor: pointer;
+      border-radius: 8px;
+      transition: background .2s, color .2s, box-shadow .2s;
+    }
+    .tab i { font-size: 0.875rem; }
+    .tab.active {
+      background: var(--primary);
+      color: white;
+      box-shadow: 0 1px 3px rgba(0,0,0,.12);
+    }
+    .tab:not(.active):hover { background: #e2e8f0; color: var(--text); }
+
+    .main { padding: 1.5rem 1.25rem; max-width: 960px; margin: 0 auto; }
+
+    .card {
+      background: var(--card-bg);
+      border-radius: var(--radius);
+      box-shadow: var(--card-shadow);
+      border: 1px solid var(--border);
+      margin-bottom: 1.25rem;
+      overflow: hidden;
+      transition: box-shadow .2s;
+    }
+    .card:hover { box-shadow: var(--card-shadow-hover); }
+    .card-head {
+      padding: 1.25rem 1.5rem;
+      border-bottom: 1px solid var(--border);
+    }
+    .card-title { font-size: 1.125rem; font-weight: 700; margin: 0; color: var(--text); }
+    .card-subtitle { font-size: 0.875rem; color: var(--text-muted); margin: 0.35rem 0 0 0; }
+
+    /* Upload areas */
+    .upload-row { display: flex; gap: 1.5rem; padding: 1.5rem; flex-wrap: wrap; }
+    .upload-col { flex: 1; min-width: 260px; }
+    .upload-label { font-size: 0.9375rem; font-weight: 600; margin: 0 0 0.25rem 0; display: block; }
+    .upload-desc { font-size: 0.8125rem; color: var(--text-muted); margin: 0 0 0.75rem 0; }
+    .drop-zone {
+      border: 2px dashed var(--border);
+      border-radius: 10px;
+      padding: 2rem;
+      text-align: center;
+      cursor: pointer;
+      transition: border-color .2s, background .2s;
+      background: #fafafa;
+    }
+    .drop-zone:hover, .drop-zone.dragover { border-color: var(--primary); background: var(--primary-light); }
+    .drop-zone.has-file { border-color: var(--primary); background: #eff6ff; }
+    .drop-zone .icon { color: var(--primary); font-size: 2.5rem; margin-bottom: 0.5rem; }
+    .drop-zone .main-text { font-size: 0.9375rem; font-weight: 500; color: var(--text); display: block; }
+    .drop-zone .sub-text { font-size: 0.8125rem; color: var(--text-muted); margin-top: 0.25rem; }
+    .drop-zone input[type="file"] { display: none; }
+    .file-name { font-size: 0.8125rem; color: var(--primary); margin-top: 0.5rem; font-weight: 500; }
+
+    /* Uploaded file card (after uploading) */
+    .file-card {
+      display: none;
+      border: 1px solid var(--border);
+      border-radius: 10px;
+      padding: 1rem 1.25rem;
+      background: var(--card-bg);
+      align-items: flex-start;
+      gap: 0.75rem;
+    }
+    .file-card.visible { display: flex; }
+    .file-card-check {
+      width: 36px;
+      height: 36px;
+      border-radius: 50%;
+      background: var(--added);
+      color: white;
+      flex-shrink: 0;
+      display: flex;
+      align-items: center;
+      justify-content: center;
+      font-size: 0.875rem;
+    }
+    .file-card-body { flex: 1; min-width: 0; }
+    .file-card-name { font-size: 0.9375rem; font-weight: 600; color: var(--text); margin: 0 0 0.25rem 0; word-break: break-all; }
+    .file-card-meta { font-size: 0.8125rem; color: var(--text-muted); margin: 0; }
+    .file-card-remove {
+      flex-shrink: 0;
+      width: 28px;
+      height: 28px;
+      border: none;
+      background: transparent;
+      color: var(--text-muted);
+      cursor: pointer;
+      border-radius: 6px;
+      display: flex;
+      align-items: center;
+      justify-content: center;
+      font-size: 1rem;
+    }
+    .file-card-remove:hover { background: #f1f5f9; color: var(--removed); }
+    .upload-col .drop-zone.hidden { display: none; }
+
+    /* Data preview below upload */
+    .preview-row { display: flex; gap: 1.5rem; padding: 1rem 1.5rem; flex-wrap: wrap; }
+    .preview-col { flex: 1; min-width: 280px; }
+    .preview-col-title { font-size: 0.875rem; font-weight: 600; margin: 0 0 0.5rem 0; color: var(--text); }
+    .preview-sheet-row { display: flex; align-items: center; gap: 0.5rem; margin-bottom: 0.5rem; }
+    .preview-sheet-label { font-size: 0.8125rem; color: var(--text-muted); }
+    .preview-sheet-select { padding: 0.35rem 0.5rem; border: 1px solid var(--border); border-radius: 6px; font-size: 0.8125rem; min-width: 120px; }
+    .sheet-option-group .sheet-select { width: auto; min-width: 140px; margin-left: 0.25rem; }
+    .sheet-select-single { width: 100%; max-width: 320px; padding: 0.5rem 0.75rem; border: 1px solid var(--border); border-radius: 8px; font-size: 0.9375rem; background: var(--card-bg); }
+    #keyInput.sheet-select-single { max-width: 280px; }
+    .preview-placeholder { font-size: 0.875rem; color: var(--text-muted); padding: 1rem; background: #f8fafc; border-radius: 8px; min-height: 60px; }
+    .preview-table-wrap { overflow-x: auto; max-height: 280px; overflow-y: auto; border: 1px solid var(--border); border-radius: 8px; }
+    .preview-table-wrap table { width: 100%; border-collapse: collapse; font-size: 0.8125rem; }
+    .preview-table-wrap th, .preview-table-wrap td { padding: 0.4rem 0.6rem; text-align: left; border-bottom: 1px solid var(--border); white-space: nowrap; }
+    .preview-table-wrap th { background: #f1f5f9; color: var(--text-muted); font-weight: 500; position: sticky; top: 0; }
+    .preview-table-wrap tr:last-child td { border-bottom: none; }
+    .preview-meta { font-size: 0.75rem; color: var(--text-muted); margin-top: 0.35rem; }
+
+    /* Comparison options */
+    .options-inner { padding: 1.25rem 1.5rem; }
+    .option-group { margin-bottom: 1.25rem; }
+    .option-group:last-child { margin-bottom: 0; }
+    .option-group-label { font-size: 0.875rem; font-weight: 600; margin-bottom: 0.5rem; display: block; color: var(--text); }
+    .option-row { display: flex; align-items: center; gap: 1rem; flex-wrap: wrap; }
+    .option-item { display: inline-flex; align-items: center; gap: 0.5rem; font-size: 0.9375rem; cursor: pointer; }
+    .option-item input { margin: 0; cursor: pointer; }
+    .key-input {
+      margin-left: 0.5rem;
+      padding: 0.4rem 0.6rem;
+      border: 1px solid var(--border);
+      border-radius: 6px;
+      font-size: 0.875rem;
+      width: 140px;
+    }
+    .key-input:disabled { background: #f1f5f9; color: var(--text-muted); }
+
+    .mode-cards { display: flex; gap: 1rem; flex-wrap: wrap; margin-bottom: 1rem; }
+    .mode-card {
+      flex: 1;
+      min-width: 220px;
+      border: 2px solid var(--border);
+      border-radius: 10px;
+      padding: 1rem 1.25rem;
+      cursor: pointer;
+      transition: border-color .2s, background .2s;
+      background: var(--card-bg);
+    }
+    .mode-card:hover { border-color: #cbd5e1; background: #f8fafc; }
+    .mode-card.selected { border-color: var(--primary); background: #eff6ff; }
+    .mode-card input { display: none; }
+    .mode-card-icon { font-size: 1.5rem; color: var(--primary); margin-bottom: 0.5rem; }
+    .mode-card-title { font-size: 0.9375rem; font-weight: 600; margin: 0 0 0.25rem 0; color: var(--text); }
+    .mode-card-desc { font-size: 0.8125rem; color: var(--text-muted); margin: 0; line-height: 1.4; }
+
+    .export-row { display: flex; align-items: center; justify-content: space-between; margin-bottom: 1.25rem; }
+    .export-label { display: flex; align-items: center; gap: 0.5rem; font-size: 0.9375rem; font-weight: 500; color: var(--text); }
+    .export-label i { color: var(--text-muted); }
+    .toggle-wrap { position: relative; width: 44px; height: 24px; background: #cbd5e1; border-radius: 12px; cursor: pointer; transition: background .2s; }
+    .toggle-wrap.on { background: var(--primary); }
+    .toggle-wrap .toggle-knob { position: absolute; top: 2px; left: 2px; width: 20px; height: 20px; background: white; border-radius: 50%; box-shadow: 0 1px 3px rgba(0,0,0,.2); transition: transform .2s; }
+    .toggle-wrap.on .toggle-knob { transform: translateX(20px); }
+
+    .main-footer { text-align: center; font-size: 0.8125rem; color: var(--text-muted); padding: 2rem 1rem; margin-top: 0.5rem; }
+    .compare-footer { display: flex; justify-content: flex-end; margin-top: 1.25rem; }
+    .btn-compare {
+      display: inline-flex;
+      align-items: center;
+      gap: 0.5rem;
+      background: var(--primary);
+      color: white;
+      border: none;
+      padding: 0.6rem 1.35rem;
+      border-radius: 8px;
+      font-size: 0.9375rem;
+      font-weight: 600;
+      cursor: pointer;
+    }
+    .btn-compare:hover { background: var(--primary-dark); transform: translateY(-1px); }
+    .btn-compare:active { transform: translateY(0); }
+    .btn-compare:disabled { opacity: 0.6; cursor: not-allowed; transform: none; }
+    .btn-compare.loading { pointer-events: none; }
+    .btn-compare .btn-spinner { display: none; width: 1em; height: 1em; border: 2px solid rgba(255,255,255,0.3); border-top-color: #fff; border-radius: 50%; animation: btn-spin 0.7s linear infinite; }
+    .btn-compare.loading .btn-spinner { display: inline-block; }
+    .btn-compare.loading .fa-play { display: none; }
+    @keyframes btn-spin { to { transform: rotate(360deg); } }
+
+    /* Results tab content */
+    .tab-content { display: none; }
+    .tab-content.active { display: block; }
+    .results-empty {
+      text-align: center;
+      padding: 3rem 2rem;
+      background: var(--card-bg);
+      border: 1px dashed var(--border);
+      border-radius: 12px;
+      color: var(--text-muted);
+    }
+    .results-empty i { font-size: 2.5rem; color: var(--primary); opacity: 0.5; margin-bottom: 0.75rem; display: block; }
+    .results-empty p { margin: 0; font-size: 0.9375rem; line-height: 1.5; }
+    .results-summary-wrap { background: #eff3f7; border-radius: 14px; padding: 1.25rem; margin-bottom: 1.5rem; }
+    .results-summary { display: flex; gap: 1rem; flex-wrap: wrap; margin-bottom: 0; }
+    .results-summary .card {
+      margin-bottom: 0;
+      flex: 1;
+      min-width: 100px;
+      padding: 1rem 1.25rem;
+      background: #fff;
+      border: none;
+      border-radius: 14px;
+      box-shadow: 0 2px 8px rgba(0,0,0,.06), 0 1px 2px rgba(0,0,0,.04);
+      border-left: 6px solid;
+    }
+    .results-summary .card.added { border-left-color: var(--added); }
+    .results-summary .card.removed { border-left-color: var(--removed); }
+    .results-summary .card.modified { border-left-color: var(--modified); }
+    .results-header { display: flex; flex-wrap: wrap; align-items: center; justify-content: space-between; gap: 1rem; margin-bottom: 1rem; padding-bottom: 1rem; border-bottom: 1px solid var(--border); }
+    .results-meta { display: flex; flex-wrap: wrap; align-items: center; gap: 1rem; font-size: 0.875rem; color: var(--text-muted); }
+    .results-meta-item i { margin-right: 0.35rem; color: var(--primary); }
+    .results-status { display: inline-flex; align-items: center; gap: 0.35rem; padding: 0.35rem 0.75rem; background: #dcfce7; color: #166534; border-radius: 999px; font-size: 0.8125rem; font-weight: 600; }
+    .results-status .status-dot { font-size: 0.5rem; color: #22c55e; }
+    .results-export { display: flex; gap: 0.5rem; }
+    .btn-export { display: inline-flex; align-items: center; gap: 0.4rem; padding: 0.4rem 0.75rem; border: 1px solid var(--border); border-radius: 6px; background: var(--card-bg); font-size: 0.8125rem; cursor: pointer; color: var(--text); }
+    .btn-export:hover { background: #f1f5f9; }
+    .results-validation-tabs { display: flex; gap: 0.25rem; margin-bottom: 1rem; }
+    .validation-tab { display: flex; align-items: center; gap: 0.5rem; padding: 0.5rem 1rem; border: none; background: var(--tab-inactive); color: var(--text-muted); border-radius: 8px; font-size: 0.875rem; font-weight: 500; cursor: pointer; }
+    .validation-tab:hover { background: #e2e8f0; color: var(--text); }
+    .validation-tab.active { background: var(--primary); color: white; }
+    .validation-content { display: none; }
+    .validation-content.active { display: block; }
+    .sheet-count-summary { background: var(--card-bg); border: 1px solid var(--border); border-radius: 12px; padding: 1.25rem; }
+    .sheet-count-summary-title { margin: 0 0 1rem 0; font-size: 1rem; font-weight: 600; color: var(--text); display: flex; align-items: center; gap: 0.5rem; }
+    .sheet-count-summary-title i { color: var(--primary); }
+    .sheet-count-cards { display: flex; gap: 1rem; flex-wrap: wrap; }
+    .sc-card { flex: 1; min-width: 120px; padding: 1rem; background: #f8fafc; border: 1px solid var(--border); border-radius: 10px; }
+    .sc-card-label { display: block; font-size: 0.75rem; color: var(--text-muted); margin-bottom: 0.35rem; }
+    .sc-card-value { font-size: 1.5rem; font-weight: 700; color: var(--text); }
+    .sc-card-diff .sc-card-value { background: #fff7ed; color: #c2410c; padding: 0.15rem 0.5rem; border-radius: 6px; }
+    .sc-card-diff.match .sc-card-value { background: #dcfce7; color: #166534; }
+
+    .sheet-presence-analysis { margin-top: 1.25rem; }
+    .sheet-presence-title { margin: 0 0 1rem 0; padding: 0; font-size: 1rem; font-weight: 600; color: var(--text); display: flex; align-items: center; gap: 0.5rem; }
+    .sheet-presence-title i { color: #f59e0b; }
+    .presence-section { padding: 1.25rem; border-radius: 1rem; margin-bottom: 1rem; border: 1px solid; }
+    .presence-section:last-child { margin-bottom: 0; }
+    .presence-heading-row { display: flex; align-items: flex-start; justify-content: space-between; gap: 0.75rem; margin-bottom: 0.75rem; }
+    .presence-heading { margin: 0; font-size: 1.125rem; font-weight: 600; display: flex; align-items: center; gap: 0.5rem; }
+    .presence-count { padding: 0.25rem 0.625rem; border-radius: 999px; font-size: 0.75rem; font-weight: 700; }
+    .presence-desc { margin: 0 0 0.75rem 0; font-size: 0.875rem; }
+    .presence-tags { display: flex; flex-wrap: wrap; gap: 0.5rem; }
+    .presence-tag { display: inline-block; padding: 0.375rem 1rem; border-radius: 0.75rem; font-size: 0.875rem; font-weight: 500; }
+    /* Matched Sheets – from reference: emerald card, count pill, white/gray tags */
+    .presence-matched { background: #ecfdf5; border-color: #a7f3d0; }
+    .presence-matched .presence-heading { color: #065f46; }
+    .presence-matched .presence-count { background: #d1fae5; color: #047857; }
+    .presence-matched .presence-desc { color: #047857; }
+    .presence-matched .presence-tag { background: #fff; color: #1f2937; border: 1px solid #f3f4f6; box-shadow: 0 1px 2px rgba(0,0,0,.05); }
+    .presence-matched .presence-tag:empty { display: none; }
+    .presence-missing .presence-count { background: #fecaca; color: #991b1b; }
+    .presence-missing { background: #fff1f2; border-color: #fecaca; }
+    .presence-missing .presence-heading { color: #991b1b; }
+    .presence-missing .presence-desc { color: rgba(185,28,28,.8); }
+    .presence-missing .presence-tag { background: #dc2626; color: #fff; font-weight: 700; box-shadow: 0 4px 6px -1px rgba(220,38,38,.2); }
+    .presence-additional .presence-count { background: #bae6fd; color: #0369a1; }
+    .presence-additional { background: #f0f9ff; border-color: #7dd3fc; }
+    .presence-additional .presence-heading { color: #0c4a6e; }
+    .presence-additional .presence-desc { color: rgba(2,132,199,.8); }
+    .presence-additional .presence-tag { background: #fff; color: #0284c7; border: 1px solid #bae6fd; font-weight: 700; box-shadow: 0 1px 2px rgba(0,0,0,.05); }
+    .cell-level-results { background: var(--card-bg); border: 1px solid var(--border); border-radius: 12px; padding: 1.25rem; margin-bottom: 1rem; }
+    .cell-level-title { margin: 0 0 0.25rem 0; font-size: 1.25rem; font-weight: 700; color: var(--text); }
+    .cell-level-subtitle { margin: 0 0 1rem 0; font-size: 0.875rem; color: var(--text-muted); }
+    .cell-level-tabs { display: flex; flex-wrap: wrap; gap: 0.5rem; margin-bottom: 1rem; }
+    .cell-tab { display: inline-flex; align-items: center; gap: 0.4rem; padding: 0.5rem 0.75rem; border: 1px solid var(--border); border-radius: 8px; background: #f1f5f9; color: var(--text-muted); font-size: 0.8125rem; font-weight: 600; cursor: pointer; }
+    .cell-tab:hover { background: #e2e8f0; color: var(--text); }
+    .cell-tab.active { background: #fef3c7; border-color: #f59e0b; color: #92400e; }
+    .cell-tab-count { margin-left: 0.15rem; }
+    .cell-level-search-row { display: flex; flex-wrap: wrap; align-items: center; gap: 0.75rem; margin-bottom: 0.75rem; }
+    .cell-level-search { flex: 1; min-width: 200px; padding: 0.55rem 0.85rem; border: 1px solid var(--border); border-radius: var(--radius-sm); font-size: 0.875rem; }
+    .cell-level-search::placeholder { color: var(--text-muted); }
+    .cell-level-found { margin: 0; font-size: 0.8125rem; color: var(--text-muted); }
+    .cell-level-table-wrap { overflow-x: auto; margin-bottom: 0.5rem; }
+    .cell-level-table { width: 100%; border-collapse: collapse; font-size: 0.875rem; }
+    .cell-level-table th { text-align: left; padding: 0.5rem 0.75rem; background: #f8fafc; color: var(--primary); font-weight: 600; border-bottom: 1px solid var(--border); }
+    .cell-level-table td { padding: 0.5rem 0.75rem; border-bottom: 1px solid var(--border); vertical-align: middle; }
+    .cell-level-table tbody tr:nth-child(even) { background: #fafafa; }
+    .cell-level-table tbody tr:nth-child(odd) { background: #fff; }
+    .cell-level-table tbody tr:hover { background: var(--primary-light); }
+    .th-dot { display: inline-block; width: 6px; height: 6px; border-radius: 50%; margin-right: 0.35rem; vertical-align: middle; }
+    .th-dot.expected-dot { background: #dc2626; }
+    .th-dot.actual-dot { background: #16a34a; }
+    .cell-pill { display: inline-block; padding: 0.25rem 0.5rem; border-radius: 6px; font-size: 0.8125rem; font-weight: 500; }
+    .cell-pill.expected { background: #fee2e2; color: #991b1b; }
+    .cell-pill.actual { background: #dcfce7; color: #166534; }
+    .cell-pill.missing { background: #f1f5f9; color: var(--text-muted); }
+    .cell-level-empty { margin: 0.75rem 0 0; font-size: 0.875rem; color: var(--text-muted); font-style: italic; }
+    .results-summary .label { display: block; font-size: 0.8125rem; font-weight: 500; color: #374151; margin-bottom: 0.35rem; }
+    .results-summary .value { display: block; font-size: 1.5rem; font-weight: 700; color: #1f2937; }
+    .config-text { font-size: 0.8125rem; color: var(--text-muted); margin-bottom: 1rem; }
+    section.results-section {
+      background: var(--card-bg);
+      border: 1px solid var(--border);
+      border-radius: 10px;
+      margin-bottom: 1rem;
+      overflow: hidden;
+    }
+    section.results-section h2 {
+      margin: 0;
+      padding: 0.75rem 1rem;
+      font-size: 0.9375rem;
+      font-weight: 600;
+      border-bottom: 1px solid var(--border);
+    }
+    section.results-section.added h2 { color: var(--added); }
+    section.results-section.removed h2 { color: var(--removed); }
+    section.results-section.modified h2 { color: var(--modified); }
+    .table-wrap { overflow-x: auto; }
+    .results-section table { width: 100%; border-collapse: collapse; font-size: 0.875rem; }
+    .results-section th, .results-section td { padding: 0.5rem 1rem; text-align: left; border-bottom: 1px solid var(--border); }
+    .results-section th { color: var(--text-muted); font-weight: 500; }
+    .results-section tr:last-child td { border-bottom: none; }
+    .empty-msg { color: var(--text-muted); padding: 1rem; font-style: italic; font-size: 0.875rem; }
+    .modified-row { margin: 0.75rem 1rem; padding-bottom: 0.75rem; border-bottom: 1px solid var(--border); }
+    .modified-row:last-child { border-bottom: none; }
+    .modified-row .id { font-weight: 600; margin-bottom: 0.25rem; font-size: 0.875rem; }
+    .modified-row .change { font-size: 0.8125rem; margin-left: 1rem; color: var(--text-muted); }
+    .modified-row .change strong { color: var(--text); }
+    .modified-row .change .old { color: var(--removed); }
+    .modified-row .change .new { color: var(--added); }
+    .error-msg { color: var(--removed); padding: 1rem; background: #fef2f2; border-radius: 8px; margin-bottom: 1rem; font-size: 0.875rem; }
+    .error-msg .code { font-size: 0.75rem; color: var(--text-muted); margin-top: 0.5rem; }
+    .error-msg ul { margin: 0.5rem 0 0 1rem; }
+
+    @media (max-width: 640px) {
+      .header { padding: 0.75rem 1rem; flex-wrap: wrap; gap: 0.5rem; }
+      .header-title { font-size: 1.1rem; }
+      .tabs { margin: 0.75rem 1rem; max-width: none; padding: 4px; }
+      .tab { padding: 0.45rem 0.75rem; font-size: 0.75rem; }
+      .main { padding: 1rem; }
+      .upload-row { padding: 1rem; }
+      .upload-col { min-width: 100%; }
+      .compare-footer { justify-content: stretch; }
+      .btn-compare { width: 100%; justify-content: center; }
+    }
+  </style>
+</head>
+<body>
+  <header class="header">
+    <div class="header-left">
+      <div class="header-icon"><i class="fas fa-table-cells"></i></div>
+      <div>
+        <h1 class="header-title">Excel Comparison Tool</h1>
+        <p class="header-subtitle">Compare and analyze Excel files</p>
+      </div>
+    </div>
+    <div class="header-right">
+      <div class="brand-text">
+        <p class="brand-name">ABB</p>
+        <p class="brand-powered">Powered by DTC</p>
+      </div>
+      <div class="brand-avatar">ABB</div>
+    </div>
+  </header>
+
+  <nav class="tabs" aria-label="Excel Comparison and Results">
+    <button type="button" class="tab active" data-tab="upload" aria-pressed="true" aria-current="page">
+      <i class="fas fa-table-cells" aria-hidden="true"></i> Excel Comparison
+    </button>
+    <button type="button" class="tab" data-tab="results" aria-pressed="false">
+      <i class="fas fa-file-lines" aria-hidden="true"></i> Results / Report
+    </button>
+  </nav>
+
+  <main class="main">
+    <div id="uploadPanel" class="tab-content active">
+      <div class="card">
+        <div class="card-head">
+          <h2 class="card-title">Upload Excel Files</h2>
+          <p class="card-subtitle">Upload the Expected and Actual Excel files to compare</p>
+        </div>
+        <div class="upload-row">
+          <div class="upload-col">
+            <span class="upload-label">Expected File</span>
+            <p class="upload-desc">The baseline Excel file for comparison</p>
+            <div class="drop-zone" id="dropExpected" role="button" tabindex="0">
+              <i class="fas fa-cloud-arrow-up icon"></i>
+              <span class="main-text">Drop your Excel file here</span>
+              <span class="sub-text">or click to browse (.xlsx, .xls)</span>
+              <input type="file" id="expectedFile" accept=".xlsx,.xls">
+            </div>
+            <div class="file-card" id="expectedCard" aria-live="polite">
+              <div class="file-card-check"><i class="fas fa-check"></i></div>
+              <div class="file-card-body">
+                <p class="file-card-name" id="expectedCardName"></p>
+                <p class="file-card-meta" id="expectedCardMeta"></p>
+              </div>
+              <button type="button" class="file-card-remove" id="expectedRemove" title="Remove file" aria-label="Remove file"><i class="fas fa-times"></i></button>
+            </div>
+          </div>
+          <div class="upload-col">
+            <span class="upload-label">Actual File</span>
+            <p class="upload-desc">The file to compare against expected</p>
+            <div class="drop-zone" id="dropActual" role="button" tabindex="0">
+              <i class="fas fa-cloud-arrow-up icon"></i>
+              <span class="main-text">Drop your Excel file here</span>
+              <span class="sub-text">or click to browse (.xlsx, .xls)</span>
+              <input type="file" id="actualFile" accept=".xlsx,.xls">
+            </div>
+            <div class="file-card" id="actualCard" aria-live="polite">
+              <div class="file-card-check"><i class="fas fa-check"></i></div>
+              <div class="file-card-body">
+                <p class="file-card-name" id="actualCardName"></p>
+                <p class="file-card-meta" id="actualCardMeta"></p>
+              </div>
+              <button type="button" class="file-card-remove" id="actualRemove" title="Remove file" aria-label="Remove file"><i class="fas fa-times"></i></button>
+            </div>
+          </div>
+        </div>
+      </div>
+
+      <div class="card" id="previewCard">
+        <div class="card-head">
+          <h2 class="card-title">Data preview</h2>
+          <p class="card-subtitle">First rows of each uploaded file</p>
+        </div>
+        <div class="preview-row">
+          <div class="preview-col">
+            <h3 class="preview-col-title" id="expectedPreviewTitle">Expected File</h3>
+            <div class="preview-sheet-row" id="expectedSheetRow" style="display: none;">
+              <label class="preview-sheet-label">Sheet:</label>
+              <select class="preview-sheet-select" id="expectedSheetSelect"></select>
+            </div>
+            <div id="expectedPreview" class="preview-placeholder">Upload a file to see preview.</div>
+          </div>
+          <div class="preview-col">
+            <h3 class="preview-col-title" id="actualPreviewTitle">Actual File</h3>
+            <div class="preview-sheet-row" id="actualSheetRow" style="display: none;">
+              <label class="preview-sheet-label">Sheet:</label>
+              <select class="preview-sheet-select" id="actualSheetSelect"></select>
+            </div>
+            <div id="actualPreview" class="preview-placeholder">Upload a file to see preview.</div>
+          </div>
+        </div>
+      </div>
+
+      <div class="card">
+        <div class="card-head">
+          <h2 class="card-title">Comparison Options</h2>
+        </div>
+        <div class="options-inner">
+          <div class="option-group">
+            <span class="option-group-label">Comparison Mode</span>
+            <div class="mode-cards">
+              <label class="mode-card selected" id="modeCardSheetCount" data-mode="sheet_count">
+                <input type="radio" name="compareMode" value="sheet_count" checked>
+                <div class="mode-card-icon"><i class="fas fa-layer-group"></i></div>
+                <div class="mode-card-title">Sheet Count</div>
+                <p class="mode-card-desc">Compare total number of sheets and highlight mismatches</p>
+              </label>
+              <label class="mode-card" id="modeCardSpecific" data-mode="specific">
+                <input type="radio" name="compareMode" value="specific">
+                <div class="mode-card-icon"><i class="fas fa-table-cells"></i></div>
+                <div class="mode-card-title">Specific Sheet Comparison</div>
+                <p class="mode-card-desc">Compare specific sheets with cell-by-cell or row-level analysis</p>
+              </label>
+            </div>
+          </div>
+          <div id="specificSheetOptions" style="display: none;">
+            <div class="option-group">
+              <label class="option-group-label">Select Sheet</label>
+              <select class="sheet-select-single" id="sheetToCompare">
+                <option value="">Choose a sheet to compare</option>
+              </select>
+            </div>
+            <div class="option-group">
+              <span class="option-group-label">Comparison Type</span>
+              <div class="option-row">
+                <label class="option-item"><input type="radio" name="mode" value="position" checked> Cell-by-Cell</label>
+                <label class="option-item"><input type="radio" name="mode" value="key"> Row-Level</label>
+              </div>
+            </div>
+            <div class="option-group key-option-group" id="keyOptionGroup" style="display: none;">
+              <label class="option-group-label">Primary key column (Row-Level)</label>
+              <select class="key-input sheet-select-single" id="keyInput">
+                <option value="">Select primary key column</option>
+              </select>
+            </div>
+            <!-- hidden: still used for API when different sheets per file needed later -->
+            <select class="key-input sheet-select" id="expectedCompareSheet" aria-hidden="true" style="display: none;"></select>
+            <select class="key-input sheet-select" id="actualCompareSheet" aria-hidden="true" style="display: none;"></select>
+          </div>
+          <div class="export-row">
+            <span class="export-label"><i class="fas fa-folder-arrow-down"></i> Enable Export</span>
+            <div class="toggle-wrap" id="exportToggle" role="button" tabindex="0" aria-pressed="false" title="Enable export of comparison result"></div>
+          </div>
+          <div class="compare-footer">
+            <button type="button" class="btn-compare" id="runCompare"><span class="btn-spinner" aria-hidden="true"></span><i class="fas fa-play" aria-hidden="true"></i><span class="btn-text">Compare Files</span></button>
+          </div>
+        </div>
+      </div>
+
+      <div id="uploadError" class="error-msg" style="display: none;"></div>
+    </div>
+
+    <div id="resultsPanel" class="tab-content">
+      <p class="config-text" id="configText"></p>
+      <div id="resultsError" class="error-msg" style="display: none;"></div>
+      <div id="resultsEmpty" class="results-empty">
+        <i class="fas fa-table-cells"></i>
+        <p>Run a comparison from the <strong>Excel Comparison</strong> tab to see results here.</p>
+      </div>
+      <div id="resultsOut" style="display: none;">
+        <div class="results-header" id="resultsHeader">
+          <div class="results-meta">
+            <span class="results-meta-item"><i class="fas fa-calendar"></i> <span id="resultsDate"></span></span>
+            <span class="results-meta-item"><i class="fas fa-clock"></i> <span id="resultsTime"></span></span>
+            <span class="results-status" id="resultsStatus"><i class="fas fa-circle status-dot"></i> Comparison Complete</span>
+          </div>
+          <div class="results-export" id="resultsExport">
+            <button type="button" class="btn-export" id="exportHtmlBtn"><i class="fas fa-file-code"></i> HTML</button>
+            <button type="button" class="btn-export" id="exportExcelBtn"><i class="fas fa-file-excel"></i> Excel</button>
+          </div>
+        </div>
+        <div class="results-validation-tabs">
+          <button type="button" class="validation-tab active" data-validation="sheet" id="tabSheetValidation"><i class="fas fa-layer-group"></i> Sheet Validation</button>
+          <button type="button" class="validation-tab" data-validation="cell" id="tabCellValidation"><i class="fas fa-table-cells"></i> Cell Validation</button>
+        </div>
+        <div id="validationSheetContent" class="validation-content active">
+          <div class="sheet-count-summary" id="sheetCountSummaryCard">
+            <h3 class="sheet-count-summary-title"><i class="fas fa-table-cells"></i> Sheet Count Summary</h3>
+            <div class="sheet-count-cards" id="sheetCountCards">
+              <div class="sc-card"><span class="sc-card-label" id="scExpectedLabel">Expected file</span><span class="sc-card-value" id="scExpected">—</span></div>
+              <div class="sc-card"><span class="sc-card-label" id="scActualLabel">Actual file</span><span class="sc-card-value" id="scActual">—</span></div>
+              <div class="sc-card sc-card-diff"><span class="sc-card-label">Difference</span><span class="sc-card-value" id="scDifference">—</span></div>
+            </div>
+          </div>
+          <div class="sheet-presence-analysis" id="sheetPresenceAnalysis">
+            <h3 class="sheet-presence-title"><i class="fas fa-triangle-exclamation"></i> Sheet Presence Analysis</h3>
+            <div class="presence-section presence-matched">
+              <div class="presence-heading-row">
+                <h4 class="presence-heading"><i class="fas fa-check-circle"></i> Matched Sheets</h4>
+                <span class="presence-count" id="presenceMatchedCount">0 sheets</span>
+              </div>
+              <p class="presence-desc" id="presenceMatchedDesc">Sheets found in both files.</p>
+              <div class="presence-tags" id="presenceMatchedTags"></div>
+            </div>
+            <div class="presence-section presence-missing">
+              <div class="presence-heading-row">
+                <h4 class="presence-heading"><i class="fas fa-minus"></i> Missing Sheets</h4>
+                <span class="presence-count" id="presenceMissingCount">0 sheets</span>
+              </div>
+              <p class="presence-desc">Present in Expected but missing in Actual:</p>
+              <div class="presence-tags" id="presenceMissingTags"></div>
+            </div>
+            <div class="presence-section presence-additional">
+              <div class="presence-heading-row">
+                <h4 class="presence-heading"><i class="fas fa-plus"></i> Additional Sheets</h4>
+                <span class="presence-count" id="presenceAdditionalCount">0 sheets</span>
+              </div>
+              <p class="presence-desc">Present in Actual but not in Expected:</p>
+              <div class="presence-tags" id="presenceAdditionalTags"></div>
+            </div>
+          </div>
+        </div>
+        <div id="validationCellContent" class="validation-content">
+          <div id="specificResultContent" style="display: none;">
+            <div class="results-summary-wrap">
+              <div class="results-summary" id="summary"></div>
+            </div>
+            <div class="cell-level-results">
+              <h2 class="cell-level-title">Cell-Level Comparison Results</h2>
+              <p class="cell-level-subtitle">Detailed view of differences, missing data, additional data, and matched content.</p>
+              <div class="cell-level-tabs" role="tablist">
+                <button type="button" class="cell-tab active" data-cell-filter="difference" role="tab" aria-selected="true"><i class="fas fa-triangle-exclamation"></i> <span class="cell-tab-label">Differences</span> <span class="cell-tab-count" id="cellCountDiff">0</span></button>
+                <button type="button" class="cell-tab" data-cell-filter="missing" role="tab" aria-selected="false"><i class="fas fa-minus-circle"></i> <span class="cell-tab-label">Missing</span> <span class="cell-tab-count" id="cellCountMissing">0</span></button>
+                <button type="button" class="cell-tab" data-cell-filter="additional" role="tab" aria-selected="false"><i class="fas fa-plus-circle"></i> <span class="cell-tab-label">Additional</span> <span class="cell-tab-count" id="cellCountAdditional">0</span></button>
+                <button type="button" class="cell-tab" data-cell-filter="matched" role="tab" aria-selected="false"><i class="fas fa-check-circle"></i> <span class="cell-tab-label">Matched</span> <span class="cell-tab-count" id="cellCountMatched">0</span></button>
+              </div>
+              <div class="cell-level-search-row">
+                <input type="text" class="cell-level-search" id="cellLevelSearch" placeholder="Search by sheet or column name..." aria-label="Search results">
+                <p class="cell-level-found" id="cellLevelFound">Found 0 cell differences</p>
+              </div>
+              <div class="table-wrap cell-level-table-wrap">
+                <table class="cell-level-table" id="cellLevelTable">
+                  <thead>
+                    <tr>
+                      <th>Sheet Name</th>
+                      <th>Row</th>
+                      <th>Column Name</th>
+                      <th><span class="th-dot expected-dot"></span> Expected Value</th>
+                      <th><span class="th-dot actual-dot"></span> Actual Value</th>
+                    </tr>
+                  </thead>
+                  <tbody id="cellLevelTableBody"></tbody>
+                </table>
+              </div>
+              <p class="cell-level-empty" id="cellLevelEmpty" style="display: none;">No rows match the selected filter. Try another tab or clear the search.</p>
+            </div>
+          </div>
+        </div>
+      </div>
+    </div>
+    <footer class="main-footer">ABB • Powered by DTC</footer>
+  </main>
+
+  <script>
+    (function() {
+      const dropExpected = document.getElementById('dropExpected');
+      const dropActual = document.getElementById('dropActual');
+      const expectedFile = document.getElementById('expectedFile');
+      const actualFile = document.getElementById('actualFile');
+      const expectedCard = document.getElementById('expectedCard');
+      const actualCard = document.getElementById('actualCard');
+      const expectedCardName = document.getElementById('expectedCardName');
+      const expectedCardMeta = document.getElementById('expectedCardMeta');
+      const actualCardName = document.getElementById('actualCardName');
+      const actualCardMeta = document.getElementById('actualCardMeta');
+      const keyInput = document.getElementById('keyInput');
+      const runBtn = document.getElementById('runCompare');
+      const uploadError = document.getElementById('uploadError');
+      const resultsError = document.getElementById('resultsError');
+      const resultsEmpty = document.getElementById('resultsEmpty');
+      const resultsOut = document.getElementById('resultsOut');
+      const summaryEl = document.getElementById('summary');
+      const addedTitle = document.getElementById('added-title');
+      const removedTitle = document.getElementById('removed-title');
+      const modifiedTitle = document.getElementById('modified-title');
+      const addedWrap = document.getElementById('added-wrap');
+      const removedWrap = document.getElementById('removed-wrap');
+      const modifiedWrap = document.getElementById('modified-wrap');
+      const configText = document.getElementById('configText');
+      const tabUpload = document.querySelector('[data-tab="upload"]');
+      const tabResults = document.querySelector('[data-tab="results"]');
+      const uploadPanel = document.getElementById('uploadPanel');
+      const resultsPanel = document.getElementById('resultsPanel');
+      const expectedPreviewEl = document.getElementById('expectedPreview');
+      const actualPreviewEl = document.getElementById('actualPreview');
+      const expectedSheetRow = document.getElementById('expectedSheetRow');
+      const actualSheetRow = document.getElementById('actualSheetRow');
+      const expectedSheetSelect = document.getElementById('expectedSheetSelect');
+      const actualSheetSelect = document.getElementById('actualSheetSelect');
+      const expectedCompareSheet = document.getElementById('expectedCompareSheet');
+      const actualCompareSheet = document.getElementById('actualCompareSheet');
+      const modeCardSheetCount = document.getElementById('modeCardSheetCount');
+      const modeCardSpecific = document.getElementById('modeCardSpecific');
+      const specificSheetOptions = document.getElementById('specificSheetOptions');
+      const exportToggle = document.getElementById('exportToggle');
+      const specificResultContent = document.getElementById('specificResultContent');
+      const resultsHeader = document.getElementById('resultsHeader');
+      const resultsDate = document.getElementById('resultsDate');
+      const resultsTime = document.getElementById('resultsTime');
+      const resultsExport = document.getElementById('resultsExport');
+      const validationSheetContent = document.getElementById('validationSheetContent');
+      const validationCellContent = document.getElementById('validationCellContent');
+      const tabSheetValidation = document.getElementById('tabSheetValidation');
+      const tabCellValidation = document.getElementById('tabCellValidation');
+      const scExpected = document.getElementById('scExpected');
+      const scActual = document.getElementById('scActual');
+      const scDifference = document.getElementById('scDifference');
+      const sheetToCompare = document.getElementById('sheetToCompare');
+      const keyOptionGroup = document.getElementById('keyOptionGroup');
+      const previewPlaceholderText = 'Upload a file to see preview.';
+      let enableExport = false;
+
+      function escapeHtml(s) {
+        const div = document.createElement('div');
+        div.textContent = s;
+        return div.innerHTML;
+      }
+      function formatSize(bytes) {
+        if (bytes < 1024) return bytes + ' B';
+        if (bytes < 1024 * 1024) return (bytes / 1024).toFixed(1) + ' KB';
+        return (bytes / (1024 * 1024)).toFixed(1) + ' MB';
+      }
+      async function fetchFileInfo(file) {
+        const fd = new FormData();
+        fd.set('file', file);
+        try {
+          const res = await fetch('/api/file-info', { method: 'POST', body: fd });
+          const data = await res.json();
+          return res.ok ? { sheets: data.sheets, sheet_names: data.sheet_names || [] } : null;
+        } catch (_) { return null; }
+      }
+      function fillSheetSelect(selectEl, sheetNames, selectIndex) {
+        selectEl.innerHTML = '';
+        (sheetNames || []).forEach((name, i) => {
+          const opt = document.createElement('option');
+          opt.value = i;
+          opt.textContent = name;
+          if (i === selectIndex) opt.selected = true;
+          selectEl.appendChild(opt);
+        });
+      }
+      function resetCompareSheetSelect(selectEl) {
+        selectEl.innerHTML = '<option value="0">—</option>';
+        selectEl.disabled = true;
+      }
+      function resetSheetToCompare() {
+        sheetToCompare.innerHTML = '<option value="">Choose a sheet to compare</option>';
+      }
+      function fillKeyColumnSelect(columns) {
+        if (!keyInput || !columns || !columns.length) return;
+        keyInput.innerHTML = '<option value="">Select primary key column</option>';
+        columns.forEach(function(col) {
+          const opt = document.createElement('option');
+          opt.value = col;
+          opt.textContent = col;
+          keyInput.appendChild(opt);
+        });
+        keyInput.disabled = false;
+        var hasEmpId = columns.indexOf('EMP_ID') !== -1;
+        if (hasEmpId) keyInput.value = 'EMP_ID';
+        else if (columns[0]) keyInput.value = columns[0];
+      }
+      function resetKeyColumnSelect() {
+        keyInput.innerHTML = '<option value="">Select primary key column</option>';
+        keyInput.disabled = true;
+      }
+      function renderPreview(container, data) {
+        if (!data || !data.columns || !data.rows) {
+          container.innerHTML = '<span class="preview-placeholder">' + escapeHtml('Could not load preview.') + '</span>';
+          return;
+        }
+        const cols = data.columns;
+        const total = data.total_rows != null ? data.total_rows : data.rows.length;
+        const tableHtml = '<div class="preview-table-wrap"><table><thead><tr>' +
+          cols.map(c => '<th>' + escapeHtml(c) + '</th>').join('') + '</tr></thead><tbody>' +
+          data.rows.map(r => '<tr>' + cols.map(c => '<td>' + escapeHtml(String(r[c] ?? '')) + '</td>').join('') + '</tr>').join('') +
+          '</tbody></table></div><p class="preview-meta">Showing first ' + data.rows.length + ' of ' + total + ' rows.</p>';
+        container.innerHTML = tableHtml;
+      }
+      async function fetchPreview(file, sheetIndex) {
+        const fd = new FormData();
+        fd.set('file', file);
+        if (sheetIndex != null) fd.set('sheet', String(sheetIndex));
+        try {
+          const res = await fetch('/api/preview', { method: 'POST', body: fd });
+          const data = await res.json();
+          return res.ok ? data : null;
+        } catch (_) { return null; }
+      }
+      function clearFileCard(zone, card, nameEl, metaEl, input, previewEl, previewTitleEl, defaultTitle, sheetRow, sheetSelect, compareSheetSelect, isExpected) {
+        input.value = '';
+        card.classList.remove('visible');
+        zone.classList.remove('hidden');
+        nameEl.textContent = '';
+        metaEl.textContent = '';
+        if (previewEl) previewEl.innerHTML = escapeHtml(previewPlaceholderText);
+        if (previewTitleEl && defaultTitle) previewTitleEl.textContent = defaultTitle;
+        if (sheetRow) sheetRow.style.display = 'none';
+        if (sheetSelect) sheetSelect.innerHTML = '';
+        if (compareSheetSelect) resetCompareSheetSelect(compareSheetSelect);
+        if (isExpected && sheetToCompare) resetSheetToCompare();
+        if (isExpected) resetKeyColumnSelect();
+      }
+      function showFileCard(zone, card, nameEl, metaEl, input, removeBtn, previewEl, previewTitleEl, defaultTitle, sheetRow, sheetSelect, compareSheetSelect, isExpected) {
+        const f = input.files?.[0];
+        if (!f) return;
+        zone.classList.add('hidden');
+        card.classList.add('visible');
+        nameEl.textContent = f.name;
+        metaEl.textContent = formatSize(f.size);
+        if (previewTitleEl) previewTitleEl.textContent = f.name;
+        if (previewEl) previewEl.innerHTML = 'Loading preview…';
+        fetchFileInfo(f).then(info => {
+          const sheetNames = (info && info.sheet_names) ? info.sheet_names : [];
+          const n = (info && info.sheets != null) ? info.sheets : sheetNames.length;
+          if (n != null) metaEl.textContent = formatSize(f.size) + ' · ' + n + ' sheet' + (n !== 1 ? 's' : '');
+          fillSheetSelect(sheetSelect, sheetNames, 0);
+          if (sheetNames.length > 1 && sheetRow) {
+            sheetRow.style.display = 'flex';
+            sheetSelect.onchange = () => {
+              previewEl.innerHTML = 'Loading preview…';
+              fetchPreview(f, parseInt(sheetSelect.value, 10)).then(data => renderPreview(previewEl, data));
+            };
+          } else if (sheetRow) sheetRow.style.display = 'none';
+          if (compareSheetSelect) {
+            compareSheetSelect.innerHTML = '';
+            sheetNames.forEach((name, i) => {
+              const opt = document.createElement('option');
+              opt.value = i;
+              opt.textContent = name;
+              compareSheetSelect.appendChild(opt);
+            });
+            compareSheetSelect.disabled = sheetNames.length === 0;
+          }
+          if (isExpected && sheetToCompare && sheetNames.length) {
+            sheetToCompare.innerHTML = '<option value="">Choose a sheet to compare</option>';
+            sheetNames.forEach((name, i) => {
+              const opt = document.createElement('option');
+              opt.value = i;
+              opt.textContent = name;
+              sheetToCompare.appendChild(opt);
+            });
+          }
+          return fetchPreview(f, 0);
+        }).then(data => {
+          renderPreview(previewEl, data);
+          if (isExpected && data && data.columns && data.columns.length) fillKeyColumnSelect(data.columns);
+        });
+        removeBtn.onclick = () => clearFileCard(zone, card, nameEl, metaEl, input, previewEl, previewTitleEl, defaultTitle, sheetRow, sheetSelect, compareSheetSelect, isExpected);
+      }
+      function setupDropZone(zone, input, card, nameEl, metaEl, removeBtn, previewEl, previewTitleEl, defaultTitle, sheetRow, sheetSelect, compareSheetSelect, isExpected) {
+        zone.addEventListener('click', () => input.click());
+        zone.addEventListener('dragover', (e) => { e.preventDefault(); zone.classList.add('dragover'); });
+        zone.addEventListener('dragleave', () => zone.classList.remove('dragover'));
+        zone.addEventListener('drop', (e) => {
+          e.preventDefault();
+          zone.classList.remove('dragover');
+          const f = e.dataTransfer?.files?.[0];
+          if (f && (f.name.endsWith('.xlsx') || f.name.endsWith('.xls'))) {
+            input.files = e.dataTransfer.files;
+            showFileCard(zone, card, nameEl, metaEl, input, removeBtn, previewEl, previewTitleEl, defaultTitle, sheetRow, sheetSelect, compareSheetSelect, isExpected);
+          }
+        });
+        input.addEventListener('change', () => {
+          if (input.files?.[0]) showFileCard(zone, card, nameEl, metaEl, input, removeBtn, previewEl, previewTitleEl, defaultTitle, sheetRow, sheetSelect, compareSheetSelect, isExpected);
+        });
+      }
+      sheetToCompare.addEventListener('change', function() {
+        var f = expectedFile.files && expectedFile.files[0];
+        if (!f || !sheetToCompare.value || sheetToCompare.value === '') return;
+        fetchPreview(f, parseInt(sheetToCompare.value, 10)).then(function(data) {
+          if (data && data.columns && data.columns.length) fillKeyColumnSelect(data.columns);
+        });
+      });
+
+      resetCompareSheetSelect(expectedCompareSheet);
+      resetCompareSheetSelect(actualCompareSheet);
+      setupDropZone(dropExpected, expectedFile, expectedCard, expectedCardName, expectedCardMeta, document.getElementById('expectedRemove'), expectedPreviewEl, document.getElementById('expectedPreviewTitle'), 'Expected File', expectedSheetRow, expectedSheetSelect, expectedCompareSheet, true);
+      setupDropZone(dropActual, actualFile, actualCard, actualCardName, actualCardMeta, document.getElementById('actualRemove'), actualPreviewEl, document.getElementById('actualPreviewTitle'), 'Actual File', actualSheetRow, actualSheetSelect, actualCompareSheet, false);
+
+      document.querySelectorAll('input[name="compareMode"]').forEach(radio => {
+        radio.addEventListener('change', () => {
+          document.querySelectorAll('.mode-card').forEach(c => c.classList.remove('selected'));
+          const card = document.getElementById(radio.value === 'sheet_count' ? 'modeCardSheetCount' : 'modeCardSpecific');
+          if (card) card.classList.add('selected');
+          specificSheetOptions.style.display = radio.value === 'specific' ? 'block' : 'none';
+        });
+      });
+      document.querySelectorAll('.mode-card').forEach(card => {
+        card.addEventListener('click', () => {
+          const mode = card.getAttribute('data-mode');
+          const radio = document.querySelector('input[name="compareMode"][value="' + (mode === 'sheet_count' ? 'sheet_count' : 'specific') + '"]');
+          if (radio) { radio.checked = true; radio.dispatchEvent(new Event('change')); }
+        });
+      });
+
+      exportToggle.addEventListener('click', () => {
+        exportToggle.classList.toggle('on');
+        enableExport = exportToggle.classList.contains('on');
+        exportToggle.setAttribute('aria-pressed', enableExport);
+      });
+      exportToggle.addEventListener('keydown', (e) => { if (e.key === 'Enter' || e.key === ' ') { e.preventDefault(); exportToggle.click(); } });
+
+      document.querySelectorAll('input[name="mode"]').forEach(radio => {
+        radio.addEventListener('change', () => {
+          const isRowLevel = document.querySelector('input[name="mode"]:checked').value === 'key';
+          keyInput.disabled = !isRowLevel;
+          keyOptionGroup.style.display = isRowLevel ? 'block' : 'none';
+        });
+      });
+      keyOptionGroup.style.display = 'none';
+      resetKeyColumnSelect();
+
+      function showUploadError(msg) {
+        uploadError.innerHTML = escapeHtml(msg);
+        uploadError.style.display = 'block';
+      }
+      function hideUploadError() {
+        uploadError.style.display = 'none';
+      }
+      function showResultsError(data) {
+        const msg = typeof data === 'string' ? data : (data.error || 'Something went wrong');
+        let html = escapeHtml(msg);
+        if (data.code === 'primary_key_missing' && (data.columns_file1 || data.columns_file2)) {
+          html += '<div class="code">Use a column that exists in both files.</div>';
+          if (data.columns_file1?.length)
+            html += '<div class="code">File1 columns: ' + data.columns_file1.map(escapeHtml).join(', ') + '</div>';
+          if (data.columns_file2?.length)
+            html += '<div class="code">File2 columns: ' + data.columns_file2.map(escapeHtml).join(', ') + '</div>';
+        } else if (data.code) {
+          html += '<div class="code">' + escapeHtml(data.code) + '</div>';
+        }
+        resultsError.innerHTML = html;
+        resultsError.style.display = 'block';
+        resultsOut.style.display = 'none';
+        resultsEmpty.style.display = 'none';
+      }
+      function hideResultsError() {
+        resultsError.style.display = 'none';
+        resultsOut.style.display = 'block';
+        resultsEmpty.style.display = 'none';
+      }
+      function showResultsEmpty() {
+        resultsError.style.display = 'none';
+        resultsOut.style.display = 'none';
+        resultsEmpty.style.display = 'block';
+      }
+
+      function renderSummary(s) {
+        summaryEl.innerHTML = `
+          <div class="card added"><span class="label">Added</span><div class="value">${s.added_count}</div></div>
+          <div class="card removed"><span class="label">Removed</span><div class="value">${s.removed_count}</div></div>
+          <div class="card modified"><span class="label">Modified</span><div class="value">${s.modified_count}</div></div>
+        `;
+      }
+      function renderTable(rows, wrap) {
+        if (!rows || rows.length === 0) {
+          wrap.innerHTML = '<p class="empty-msg">No rows</p>';
+          return 0;
+        }
+        const cols = Object.keys(rows[0]);
+        wrap.innerHTML = '<table><thead><tr>' + cols.map(c => '<th>' + escapeHtml(c) + '</th>').join('') + '</tr></thead><tbody>' +
+          rows.map(r => '<tr>' + cols.map(c => '<td>' + escapeHtml(String(r[c] ?? '')) + '</td>').join('') + '</tr>').join('') + '</tbody></table>';
+        return rows.length;
+      }
+      function renderModified(modifiedRows) {
+        if (!modifiedWrap) return 0;
+        if (!modifiedRows || modifiedRows.length === 0) {
+          modifiedWrap.innerHTML = '<p class="empty-msg">No modified rows</p>';
+          return 0;
+        }
+        modifiedWrap.innerHTML = modifiedRows.map(row =>
+          '<div class="modified-row"><div class="id">ID: ' + escapeHtml(row.id) + '</div>' +
+          row.changes.map(ch => '<div class="change"><strong>' + escapeHtml(ch.column) + '</strong>: <span class="old">' + escapeHtml(String(ch.old_value ?? '')) + '</span> → <span class="new">' + escapeHtml(String(ch.new_value ?? '')) + '</span></div>').join('') +
+          '</div>'
+        ).join('');
+        return modifiedRows.length;
+      }
+
+      var cellLevelRows = [];
+      var cellLevelFilter = 'difference';
+      var sheetNameForCell = 'Sheet';
+      function buildCellLevelRows(data) {
+        var rows = [];
+        sheetNameForCell = data.config && data.config.sheet_name ? data.config.sheet_name : 'Sheet';
+        (data.modified_rows || []).forEach(function(row) {
+          var rowId = row.id || row.row_index != null ? 'Row ' + row.row_index : '';
+          (row.changes || []).forEach(function(ch) {
+            rows.push({ type: 'difference', sheetName: sheetNameForCell, row: rowId, column: ch.column, expected: ch.old_value, actual: ch.new_value });
+          });
+        });
+        var keyCol = (data.config && data.config.key) ? data.config.key : null;
+        (data.removed_rows || []).forEach(function(r, idx) {
+          var rowId = 'Row ' + (idx + 1);
+          if (typeof r === 'object' && r !== null) {
+            if (keyCol && r[keyCol] != null) rowId = String(r[keyCol]);
+            else rowId = r.EMP_ID != null ? r.EMP_ID : r.ID != null ? r.ID : (Object.values(r)[0] != null ? Object.values(r)[0] : rowId);
+          }
+          Object.keys(r || {}).forEach(function(col) {
+            rows.push({ type: 'missing', sheetName: sheetNameForCell, row: rowId, column: col, expected: r[col], actual: '\u2014' });
+          });
+        });
+        (data.added_rows || []).forEach(function(r, idx) {
+          var rowId = 'Row ' + (idx + 1);
+          if (typeof r === 'object' && r !== null) {
+            if (keyCol && r[keyCol] != null) rowId = String(r[keyCol]);
+            else rowId = r.EMP_ID != null ? r.EMP_ID : r.ID != null ? r.ID : (Object.values(r)[0] != null ? Object.values(r)[0] : rowId);
+          }
+          Object.keys(r || {}).forEach(function(col) {
+            rows.push({ type: 'additional', sheetName: sheetNameForCell, row: rowId, column: col, expected: '\u2014', actual: r[col] });
+          });
+        });
+        cellLevelRows = rows;
+      }
+      function getCellLevelCounts() {
+        var d = 0, m = 0, a = 0;
+        cellLevelRows.forEach(function(r) {
+          if (r.type === 'difference') d++;
+          else if (r.type === 'missing') m++;
+          else if (r.type === 'additional') a++;
+        });
+        return { difference: d, missing: m, additional: a, matched: 0 };
+      }
+      function filterCellLevelRows() {
+        var q = (document.getElementById('cellLevelSearch').value || '').toLowerCase();
+        return cellLevelRows.filter(function(r) {
+          if (r.type !== cellLevelFilter) return false;
+          if (!q) return true;
+          return (r.sheetName + ' ' + r.column).toLowerCase().indexOf(q) !== -1;
+        });
+      }
+      function renderCellLevelTable() {
+        var filtered = filterCellLevelRows();
+        var tbody = document.getElementById('cellLevelTableBody');
+        var foundEl = document.getElementById('cellLevelFound');
+        var emptyEl = document.getElementById('cellLevelEmpty');
+        var labels = { difference: 'cell differences', missing: 'missing cells', additional: 'additional cells', matched: 'matched cells' };
+        foundEl.textContent = 'Found ' + filtered.length + ' ' + (labels[cellLevelFilter] || '');
+        if (filtered.length === 0) {
+          tbody.innerHTML = '';
+          emptyEl.style.display = 'block';
+          return;
+        }
+        emptyEl.style.display = 'none';
+        tbody.innerHTML = filtered.map(function(r) {
+          var exp = r.expected != null && r.expected !== '' ? '<span class="cell-pill expected">' + escapeHtml(String(r.expected)) + '</span>' : '<span class="cell-pill missing">' + escapeHtml(String(r.expected === '\u2014' ? '\u2014' : r.expected || '')) + '</span>';
+          var act = r.actual != null && r.actual !== '' && r.actual !== '\u2014' ? '<span class="cell-pill actual">' + escapeHtml(String(r.actual)) + '</span>' : '<span class="cell-pill missing">' + escapeHtml(String(r.actual === '\u2014' ? '\u2014' : r.actual || '')) + '</span>';
+          return '<tr><td>' + escapeHtml(r.sheetName) + '</td><td>' + escapeHtml(String(r.row)) + '</td><td>' + escapeHtml(r.column) + '</td><td>' + exp + '</td><td>' + act + '</td></tr>';
+        }).join('');
+      }
+      function setCellLevelFilter(filter) {
+        cellLevelFilter = filter;
+        document.querySelectorAll('.cell-tab').forEach(function(t) {
+          t.classList.toggle('active', t.getAttribute('data-cell-filter') === filter);
+          t.setAttribute('aria-selected', t.getAttribute('data-cell-filter') === filter);
+        });
+        renderCellLevelTable();
+      }
+      document.querySelectorAll('.cell-tab').forEach(function(btn) {
+        btn.addEventListener('click', function() {
+          setCellLevelFilter(btn.getAttribute('data-cell-filter'));
+        });
+      });
+      document.getElementById('cellLevelSearch').addEventListener('input', renderCellLevelTable);
+
+      tabUpload.addEventListener('click', () => {
+        tabUpload.classList.add('active');
+        tabUpload.setAttribute('aria-pressed', 'true');
+        tabResults.classList.remove('active');
+        tabResults.setAttribute('aria-pressed', 'false');
+        uploadPanel.classList.add('active');
+        resultsPanel.classList.remove('active');
+      });
+      tabResults.addEventListener('click', () => {
+        tabResults.classList.add('active');
+        tabResults.setAttribute('aria-pressed', 'true');
+        tabUpload.classList.remove('active');
+        tabUpload.setAttribute('aria-pressed', 'false');
+        resultsPanel.classList.add('active');
+        uploadPanel.classList.remove('active');
+      });
+
+      function setResultsDateTime() {
+        const d = new Date();
+        resultsDate.textContent = d.toLocaleDateString('en-US', { weekday: 'short', year: 'numeric', month: 'short', day: 'numeric' });
+        resultsTime.textContent = d.toLocaleTimeString('en-US', { hour: '2-digit', minute: '2-digit', second: '2-digit', hour12: true });
+      }
+      function showValidationTab(name) {
+        document.querySelectorAll('.validation-tab').forEach(t => t.classList.remove('active'));
+        document.querySelectorAll('.validation-content').forEach(c => c.classList.remove('active'));
+        if (name === 'sheet') {
+          tabSheetValidation.classList.add('active');
+          validationSheetContent.classList.add('active');
+        } else {
+          tabCellValidation.classList.add('active');
+          validationCellContent.classList.add('active');
+        }
+      }
+      tabSheetValidation.addEventListener('click', () => showValidationTab('sheet'));
+      tabCellValidation.addEventListener('click', () => showValidationTab('cell'));
+
+      document.getElementById('exportHtmlBtn').addEventListener('click', function() {
+        var doc = '<!DOCTYPE html><html><head><meta charset="utf-8"><title>Comparison Report</title></head><body>' +
+          '<h1>Excel Comparison Report</h1><p>' + (resultsDate.textContent || '') + ' ' + (resultsTime.textContent || '') + '</p>' +
+          '<div>' + resultsOut.innerHTML + '</div></body></html>';
+        var blob = new Blob([doc], { type: 'text/html' });
+        var a = document.createElement('a');
+        a.href = URL.createObjectURL(blob);
+        a.download = 'comparison_report_' + new Date().toISOString().slice(0,10) + '.html';
+        a.click();
+        URL.revokeObjectURL(a.href);
+      });
+      document.getElementById('exportExcelBtn').addEventListener('click', function() {
+        var f1 = expectedFile.files && expectedFile.files[0];
+        var f2 = actualFile.files && actualFile.files[0];
+        if (!f1 || !f2) { alert('Please upload both files again and run comparison before exporting Excel.'); return; }
+        var formData = new FormData();
+        var useKey = document.querySelector('input[name="mode"]:checked').value === 'key';
+        formData.set('key', useKey ? (keyInput.value && keyInput.value.trim()) || 'EMP_ID' : 'none');
+        formData.set('expected_sheet', (sheetToCompare && sheetToCompare.value !== '') ? sheetToCompare.value : '0');
+        formData.set('actual_sheet', (sheetToCompare && sheetToCompare.value !== '') ? sheetToCompare.value : '0');
+        formData.set('expected_file', f1);
+        formData.set('actual_file', f2);
+        fetch('/api/export-excel', { method: 'POST', body: formData })
+          .then(function(r) { if (!r.ok) return r.json().then(function(d) { throw new Error(d.error || 'Export failed'); }); return r.blob(); })
+          .then(function(blob) {
+            var a = document.createElement('a');
+            a.href = URL.createObjectURL(blob);
+            a.download = 'comparison_result.xlsx';
+            a.click();
+            URL.revokeObjectURL(a.href);
+          })
+          .catch(function(e) { alert(e.message || 'Export failed'); });
+      });
+
+      runBtn.addEventListener('click', async () => {
+        const f1 = expectedFile.files?.[0];
+        const f2 = actualFile.files?.[0];
+        hideUploadError();
+        if (!f1 || !f2) {
+          showUploadError('Please upload both Expected and Actual Excel files.');
+          return;
+        }
+        const compareMode = document.querySelector('input[name="compareMode"]:checked').value;
+        runBtn.disabled = true;
+        runBtn.classList.add('loading');
+        var btnText = runBtn.querySelector('.btn-text');
+        var btnIcon = runBtn.querySelector('.fa-play');
+        if (btnText) btnText.textContent = 'Comparing…';
+        if (btnIcon) btnIcon.style.display = 'none';
+        try {
+          if (compareMode === 'sheet_count') {
+            const formData = new FormData();
+            formData.set('expected_file', f1);
+            formData.set('actual_file', f2);
+            const res = await fetch('/api/compare-sheet-count', { method: 'POST', body: formData });
+            const data = await res.json();
+            if (!res.ok) {
+              showResultsError(data);
+              resultsOut.style.display = 'none';
+            } else {
+              hideResultsError();
+              setResultsDateTime();
+              resultsExport.style.display = enableExport ? 'flex' : 'none';
+              configText.textContent = 'Sheet count comparison';
+              var expectedName = data.expected_filename || 'Expected file';
+              var actualName = data.actual_filename || 'Actual file';
+              document.getElementById('scExpectedLabel').textContent = expectedName;
+              document.getElementById('scActualLabel').textContent = actualName;
+              scExpected.textContent = data.expected_sheets;
+              scActual.textContent = data.actual_sheets;
+              const diff = data.expected_sheets - data.actual_sheets;
+              scDifference.textContent = (diff > 0 ? '+' : '') + diff;
+              scDifference.parentElement.classList.toggle('match', diff === 0);
+              var exp = data.sheet_names_expected || [];
+              var act = data.sheet_names_actual || [];
+              var setAct = new Set(act);
+              var setExp = new Set(exp);
+              var matched = exp.filter(function(n) { return setAct.has(n); });
+              var missing = exp.filter(function(n) { return !setAct.has(n); });
+              var additional = act.filter(function(n) { return !setExp.has(n); });
+              function sheetLabel(c) { return c + ' sheet' + (c !== 1 ? 's' : ''); }
+              document.getElementById('presenceMatchedCount').textContent = sheetLabel(matched.length);
+              document.getElementById('presenceMissingCount').textContent = sheetLabel(missing.length);
+              document.getElementById('presenceAdditionalCount').textContent = sheetLabel(additional.length);
+              document.getElementById('presenceMatchedDesc').textContent = matched.length + ' sheet' + (matched.length !== 1 ? 's' : '') + ' found in both files.';
+              document.getElementById('presenceMatchedTags').innerHTML = matched.map(function(n) { return '<span class="presence-tag">' + escapeHtml(n) + '</span>'; }).join('') || '<span class="presence-desc">None</span>';
+              document.getElementById('presenceMissingTags').innerHTML = missing.map(function(n) { return '<span class="presence-tag">' + escapeHtml(n) + '</span>'; }).join('') || '<span class="presence-desc">None</span>';
+              document.getElementById('presenceAdditionalTags').innerHTML = additional.map(function(n) { return '<span class="presence-tag">' + escapeHtml(n) + '</span>'; }).join('') || '<span class="presence-desc">None</span>';
+              specificResultContent.style.display = 'none';
+              tabSheetValidation.style.display = '';
+              tabCellValidation.style.display = 'none';
+              showValidationTab('sheet');
+              resultsOut.style.display = 'block';
+              tabResults.click();
+            }
+          } else {
+            const useKey = document.querySelector('input[name="mode"]:checked').value === 'key';
+            const key = useKey ? (keyInput.value && keyInput.value.trim()) || 'EMP_ID' : 'none';
+            const formData = new FormData();
+            formData.set('key', key);
+            const sheetIndex = (sheetToCompare && sheetToCompare.value !== '') ? sheetToCompare.value : '0';
+            formData.set('expected_sheet', sheetIndex);
+            formData.set('actual_sheet', sheetIndex);
+            formData.set('expected_file', f1);
+            formData.set('actual_file', f2);
+            const res = await fetch('/api/compare', { method: 'POST', body: formData });
+            const data = await res.json();
+            if (!res.ok) {
+              showResultsError(data);
+              resultsOut.style.display = 'none';
+            } else {
+              hideResultsError();
+              setResultsDateTime();
+              resultsExport.style.display = enableExport ? 'flex' : 'none';
+              specificResultContent.style.display = 'block';
+              const config = data.config || {};
+              configText.innerHTML = 'Comparing <code>' + escapeHtml(String(config.file1 || 'file1')) + '</code> vs <code>' + escapeHtml(String(config.file2 || 'file2')) + '</code>' +
+                (config.mode === 'position' ? ' (by row position)' : ' (primary key: ' + escapeHtml(String(config.key || 'EMP_ID')) + ')');
+              renderSummary(data.summary);
+              if (addedWrap) { const nAdded = renderTable(data.added_rows, addedWrap); if (addedTitle) addedTitle.textContent = 'Added rows' + (nAdded ? ' (' + nAdded + ')' : ''); }
+              if (removedWrap) { const nRemoved = renderTable(data.removed_rows, removedWrap); if (removedTitle) removedTitle.textContent = 'Removed rows' + (nRemoved ? ' (' + nRemoved + ')' : ''); }
+              if (modifiedWrap) { const nModified = renderModified(data.modified_rows); if (modifiedTitle) modifiedTitle.textContent = 'Modified rows' + (nModified ? ' (' + nModified + ')' : ''); }
+              buildCellLevelRows(data);
+              var counts = getCellLevelCounts();
+              document.getElementById('cellCountDiff').textContent = counts.difference;
+              document.getElementById('cellCountMissing').textContent = counts.missing;
+              document.getElementById('cellCountAdditional').textContent = counts.additional;
+              document.getElementById('cellCountMatched').textContent = counts.matched;
+              cellLevelFilter = 'difference';
+              document.querySelectorAll('.cell-tab').forEach(function(t) {
+                t.classList.toggle('active', t.getAttribute('data-cell-filter') === 'difference');
+                t.setAttribute('aria-selected', t.getAttribute('data-cell-filter') === 'difference');
+              });
+              document.getElementById('cellLevelSearch').value = '';
+              renderCellLevelTable();
+              tabSheetValidation.style.display = '';
+              tabCellValidation.style.display = '';
+              showValidationTab('cell');
+              resultsOut.style.display = 'block';
+              tabResults.click();
+            }
+          }
+        } catch (e) {
+          showResultsError({ error: e.message || 'Request failed', code: 'network' });
+        } finally {
+          runBtn.disabled = false;
+          runBtn.classList.remove('loading');
+          if (btnText) btnText.textContent = 'Compare Files';
+          if (btnIcon) btnIcon.style.display = '';
+        }
+      });
+    })();
+  </script>
+</body>
+</html>

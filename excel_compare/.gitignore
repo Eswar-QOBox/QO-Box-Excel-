@@ -1,0 +1,28 @@
+# Python
+venv/
+.venv/
+__pycache__/
+*.py[cod]
+*.pyo
+.Python
+*.so
+.env
+.venv
+env/
+
+# IDE
+.idea/
+.vscode/
+*.swp
+*.swo
+
+# Output (generated files)
+output/*.xlsx
+output/*.json
+
+# OS
+.DS_Store
+Thumbs.db
+
+# Optional: ignore sample input if you don't want to commit Excel files
+# input/*.xlsx
