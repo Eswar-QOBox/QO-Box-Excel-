@@ -38,7 +38,7 @@ sudo apt install -y python3 python3-pip python3-venv
 
 ## 2. Upload the project
 
-Copy the `excel_compare` folder to the server (e.g. `/var/www/excel_compare` or `~/excel_compare`).
+Copy the `excel_compare` folder to the server (e.g. `/var/www/excel_compare`, `/var/www/QO-Box-Excel-/excel_compare`, or `~/excel_compare`).
 
 Options:
 
@@ -107,7 +107,13 @@ WantedBy=multi-user.target
 - If your app is in a different directory or under your user, change `User`, `Group`, `WorkingDirectory`, and paths in `Environment` and `ExecStart`.
 - `127.0.0.1:5000` means only localhost can reach the app; use Nginx in front (see below) for public access.
 
-3. Enable and start:
+3. **Or** copy the included unit file (if your app is at `/var/www/QO-Box-Excel-/excel_compare`). It already uses **port 5001** so it can run alongside another Flask app on 5000:
+
+```bash
+sudo cp /var/www/QO-Box-Excel-/excel_compare/excel-compare.service /etc/systemd/system/
+```
+
+4. Enable and start:
 
 ```bash
 sudo systemctl daemon-reload

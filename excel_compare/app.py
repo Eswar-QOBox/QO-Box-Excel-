@@ -6,7 +6,6 @@ from pathlib import Path
 
 import pandas as pd
 from flask import Flask, jsonify, render_template, request, send_file
-from flask_cors import CORS
 
 from compare_excel import (
     compare_excels,
@@ -22,8 +21,19 @@ from compare_excel import (
 app = Flask(__name__)
 app.config["MAX_CONTENT_LENGTH"] = 32 * 1024 * 1024  # 32 MB
 
-# CORS: allow cross-origin requests (e.g. from other subdomains or frontends)
-CORS(app, origins=None)  # None = allow all origins; set origins=["https://..."] to restrict
+# CORS: allow cross-origin requests (Nginx also sends CORS headers)
+try:
+    from flask_cors import CORS
+    CORS(
+        app,
+        origins="*",
+        methods=["GET", "POST", "OPTIONS"],
+        allow_headers=["Content-Type", "Accept", "Authorization"],
+        expose_headers=["Content-Disposition"],
+        supports_credentials=False,
+    )
+except ImportError:
+    pass  # Nginx handles CORS if flask_cors not installed
 
 BASE = Path(__file__).resolve().parent
 INPUT_DIR = BASE / "input"
