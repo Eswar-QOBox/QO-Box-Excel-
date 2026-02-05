@@ -5,7 +5,8 @@ import tempfile
 from pathlib import Path
 
 import pandas as pd
-from flask import Flask, jsonify, render_template, request, send_file
+import os
+from flask import Flask, jsonify, render_template, request, send_file, after_this_request
 
 from compare_excel import (
     compare_excels,
@@ -39,6 +40,52 @@ BASE = Path(__file__).resolve().parent
 INPUT_DIR = BASE / "input"
 DEFAULT_FILE1 = INPUT_DIR / "file1.xlsx"
 DEFAULT_FILE2 = INPUT_DIR / "file2.xlsx"
+
+# Serve logo asset
+@app.route("/logo")
+def logo():
+    logo_path = BASE / "ABB_logo.webp"
+    if not logo_path.exists():
+        return jsonify({"error": "Logo not found"}), 404
+    return send_file(str(logo_path), mimetype="image/webp")
+
+
+# Helpers
+def _safe_jsonify(obj):
+    """
+    Convert Pandas/Numpy NA/NaN to strings and ensure JSON serializable.
+    """
+    import json
+    def default(o):
+        try:
+            return str(o)
+        except Exception:
+            return ""
+    return app.response_class(
+        response=json.dumps(obj, default=default) + "\n",
+        status=200,
+        mimetype="application/json",
+    )
+
+
+def _send_tempfile(path: str, download_name: str):
+    """
+    Send a temporary file and ensure it is deleted after the response is processed.
+    """
+    @after_this_request
+    def cleanup(response):
+        try:
+            Path(path).unlink(missing_ok=True)
+        except Exception:
+            pass
+        return response
+
+    return send_file(
+        path,
+        mimetype="application/vnd.openxmlformats-officedocument.spreadsheetml.sheet",
+        as_attachment=True,
+        download_name=download_name,
+    )
 
 
 @app.route("/")
@@ -156,7 +203,7 @@ def api_compare():
         # Position-based comparison (no primary key)
         data = get_comparison_for_frontend_by_position(df1, df2)
         data["config"] = {"file1": file1_label, "file2": file2_label, "key": None, "expected_sheet": sheet1, "actual_sheet": sheet2, "mode": "position"}
-        return jsonify(data)
+        return _safe_jsonify(data)
 
     # Primary key mode: key must exist in both files
     cols1 = list(df1.columns)
@@ -190,7 +237,29 @@ def api_compare():
 
     data = get_comparison_for_frontend(df1, df2, key)
     data["config"] = {"file1": file1_label, "file2": file2_label, "key": key, "expected_sheet": sheet1, "actual_sheet": sheet2, "mode": "primary_key"}
-    return jsonify(data)
+    return _safe_jsonify(data)
+
+
+@app.route("/api/export-cell-level-excel", methods=["POST"])
+def api_export_cell_level_excel():
+    """Export cell-level comparison rows to Excel. Expects JSON body: { "rows": [ { "sheetName", "row", "column", "expected", "actual" }, ... ] }."""
+    data = request.get_json(silent=True) or {}
+    rows = data.get("rows") or []
+    if not rows:
+        return jsonify({"error": "No cell-level rows to export"}), 400
+    try:
+        df = pd.DataFrame(rows)
+        cols = ["sheetName", "row", "column", "expected", "actual"]
+        for c in cols:
+            if c not in df.columns:
+                df[c] = ""
+        df = df[cols].fillna("").astype(str)
+        fd, out_path = tempfile.mkstemp(suffix=".xlsx")
+        os.close(fd)
+        df.to_excel(out_path, index=False, sheet_name="Cell_Level_Results", engine="openpyxl")
+        return _send_tempfile(out_path, "cell_level_comparison.xlsx")
+    except Exception as e:
+        return jsonify({"error": str(e)}), 400
 
 
 @app.route("/api/export-excel", methods=["POST"])
@@ -214,21 +283,13 @@ def api_export_excel():
         return jsonify({"error": str(e)}), 400
     if key is None:
         added, removed, modified_list, meta = compare_excels_by_position(df1, df2)
-        with tempfile.NamedTemporaryFile(suffix=".xlsx", delete=False) as tmp:
-            out_path = tmp.name
-        try:
-            export_to_excel_by_position(
-                added, removed, modified_list, meta, out_path,
-                file1_label, file2_label, sheet1,
-            )
-            return send_file(
-                out_path,
-                mimetype="application/vnd.openxmlformats-officedocument.spreadsheetml.sheet",
-                as_attachment=True,
-                download_name="comparison_result.xlsx",
-            )
-        finally:
-            Path(out_path).unlink(missing_ok=True)
+        fd, out_path = tempfile.mkstemp(suffix=".xlsx")
+        os.close(fd)
+        export_to_excel_by_position(
+            added, removed, modified_list, meta, out_path,
+            file1_label, file2_label, sheet1,
+        )
+        return _send_tempfile(out_path, "comparison_result.xlsx")
     if key not in list(df1.columns) or key not in list(df2.columns):
         return jsonify({"error": f"Primary key '{key}' not in both files"}), 400
     try:
@@ -237,21 +298,13 @@ def api_export_excel():
     except ValueError as e:
         return jsonify({"error": str(e)}), 400
     added, removed, changed, meta = compare_excels(df1, df2, key)
-    with tempfile.NamedTemporaryFile(suffix=".xlsx", delete=False) as tmp:
-        out_path = tmp.name
-    try:
-        export_to_excel(
-            added, removed, changed, meta, out_path,
-            file1_label, file2_label, sheet1, key,
-        )
-        return send_file(
-            out_path,
-            mimetype="application/vnd.openxmlformats-officedocument.spreadsheetml.sheet",
-            as_attachment=True,
-            download_name="comparison_result.xlsx",
-        )
-    finally:
-        Path(out_path).unlink(missing_ok=True)
+    fd, out_path = tempfile.mkstemp(suffix=".xlsx")
+    os.close(fd)
+    export_to_excel(
+        added, removed, changed, meta, out_path,
+        file1_label, file2_label, sheet1, key,
+    )
+    return _send_tempfile(out_path, "comparison_result.xlsx")
 
 
 if __name__ == "__main__":
