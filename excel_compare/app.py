@@ -6,6 +6,7 @@ from pathlib import Path
 
 import pandas as pd
 from flask import Flask, jsonify, render_template, request, send_file
+from flask_cors import CORS
 
 from compare_excel import (
     compare_excels,
@@ -20,6 +21,9 @@ from compare_excel import (
 
 app = Flask(__name__)
 app.config["MAX_CONTENT_LENGTH"] = 32 * 1024 * 1024  # 32 MB
+
+# CORS: allow cross-origin requests (e.g. from other subdomains or frontends)
+CORS(app, origins=None)  # None = allow all origins; set origins=["https://..."] to restrict
 
 BASE = Path(__file__).resolve().parent
 INPUT_DIR = BASE / "input"
