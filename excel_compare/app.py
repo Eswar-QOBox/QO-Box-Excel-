@@ -130,7 +130,7 @@ def api_file_info():
         return jsonify({"error": str(e), "sheets": None, "sheet_names": []}), 400
 
 
-PREVIEW_MAX_ROWS = 20
+PREVIEW_MAX_ROWS = 10
 
 
 @app.route("/api/compare-sheet-count", methods=["POST"])

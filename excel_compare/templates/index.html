@@ -219,6 +219,31 @@
     .upload-col .drop-zone.hidden { display: none; }
 
     /* Data preview below upload */
+    .preview-card-head-toggle {
+      display: flex;
+      align-items: center;
+      justify-content: space-between;
+      width: 100%;
+      cursor: pointer;
+      gap: 0.5rem;
+      text-align: left;
+      background: none;
+      border: none;
+      padding: 0;
+      margin: 0;
+      font: inherit;
+      color: inherit;
+    }
+    .preview-card-head-toggle:focus-visible { outline: 2px solid var(--primary); outline-offset: 2px; }
+    .preview-card-head-toggle .card-title { flex: 1; }
+    .preview-card-chevron {
+      flex-shrink: 0;
+      color: var(--text-muted);
+      transition: transform 0.2s;
+    }
+    .preview-card.collapsed .preview-card-chevron { transform: rotate(-90deg); }
+    .preview-card-body { overflow: hidden; }
+    .preview-card.collapsed .preview-card-body { display: none; }
     .preview-row { display: flex; gap: 1.5rem; padding: 1rem 1.5rem; flex-wrap: wrap; }
     .preview-col { flex: 1; min-width: 280px; }
     .preview-col-title { font-size: 0.875rem; font-weight: 600; margin: 0 0 0.5rem 0; color: var(--text); }
@@ -612,11 +637,17 @@
         </div>
       </div>
 
-      <div class="card" id="previewCard">
+      <div class="card preview-card collapsed" id="previewCard">
         <div class="card-head">
-          <h2 class="card-title">Data preview</h2>
-          <p class="card-subtitle">First rows of each uploaded file</p>
+          <button type="button" class="preview-card-head-toggle" id="previewCardToggle" aria-expanded="false" aria-controls="previewCardBody">
+            <span>
+              <h2 class="card-title">Data preview</h2>
+              <p class="card-subtitle">First 10 rows only. Click to open.</p>
+            </span>
+            <i class="fas fa-chevron-down preview-card-chevron" aria-hidden="true"></i>
+          </button>
         </div>
+        <div class="preview-card-body" id="previewCardBody">
         <div class="preview-row">
           <div class="preview-col">
             <h3 class="preview-col-title" id="expectedPreviewTitle">Expected File</h3>
@@ -634,6 +665,7 @@
             </div>
             <div id="actualPreview" class="preview-placeholder">Upload a file to see preview.</div>
           </div>
+        </div>
         </div>
       </div>
 
@@ -865,6 +897,8 @@
       const resultsPanel = document.getElementById('resultsPanel');
       const historicPanel = document.getElementById('historicPanel');
       const expectedPreviewEl = document.getElementById('expectedPreview');
+      const previewCard = document.getElementById('previewCard');
+      const previewCardToggle = document.getElementById('previewCardToggle');
       const actualPreviewEl = document.getElementById('actualPreview');
       const expectedSheetRow = document.getElementById('expectedSheetRow');
       const actualSheetRow = document.getElementById('actualSheetRow');
@@ -1345,6 +1379,13 @@
       }
       if (enableExportToggle) {
         enableExportToggle.addEventListener('change', applyExportVisibility);
+      }
+
+      if (previewCardToggle && previewCard) {
+        previewCardToggle.addEventListener('click', function() {
+          var expanded = !previewCard.classList.toggle('collapsed');
+          previewCardToggle.setAttribute('aria-expanded', expanded ? 'true' : 'false');
+        });
       }
 
       document.getElementById('exportHtmlBtn').addEventListener('click', function() {
