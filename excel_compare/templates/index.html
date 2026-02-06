@@ -105,7 +105,7 @@
       gap: 0;
       padding: 5px;
       margin: 1rem 1.5rem;
-      max-width: 380px;
+      max-width: 520px;
       background: #e2e8f0;
       border-radius: var(--radius);
       box-shadow: inset 0 1px 2px rgba(0,0,0,.06);
@@ -325,6 +325,65 @@
     .results-summary .card.added { border-left-color: var(--added); }
     .results-summary .card.removed { border-left-color: var(--removed); }
     .results-summary .card.modified { border-left-color: var(--modified); }
+    .enable-export-row {
+      display: flex;
+      align-items: center;
+      justify-content: space-between;
+      gap: 1rem;
+      padding: 1rem 0;
+      margin-bottom: 0.5rem;
+      border-top: 1px solid var(--border);
+    }
+    .enable-export-label {
+      display: inline-flex;
+      align-items: center;
+      gap: 0.5rem;
+      font-size: 0.9375rem;
+      font-weight: 500;
+      color: var(--text);
+    }
+    .enable-export-label i { color: var(--primary); }
+    .toggle-switch {
+      position: relative;
+      display: inline-block;
+      width: 44px;
+      height: 24px;
+      flex-shrink: 0;
+    }
+    .toggle-switch input {
+      opacity: 0;
+      width: 0;
+      height: 0;
+    }
+    .toggle-slider {
+      position: absolute;
+      cursor: pointer;
+      top: 0;
+      left: 0;
+      right: 0;
+      bottom: 0;
+      background: #cbd5e1;
+      border-radius: 24px;
+      transition: background 0.2s;
+    }
+    .toggle-slider::before {
+      content: "";
+      position: absolute;
+      height: 18px;
+      width: 18px;
+      left: 3px;
+      bottom: 3px;
+      background: white;
+      border-radius: 50%;
+      box-shadow: 0 1px 3px rgba(0,0,0,0.2);
+      transition: transform 0.2s;
+    }
+    .toggle-switch input:checked + .toggle-slider { background: var(--primary); }
+    .toggle-switch input:checked + .toggle-slider::before { transform: translateX(20px); }
+    .toggle-switch input:focus-visible + .toggle-slider { box-shadow: 0 0 0 2px var(--primary); }
+    .historic-data-section { margin-top: 0; }
+    .historic-data-body { padding: 1.5rem; }
+    .historic-data-placeholder { margin: 0; font-size: 0.9375rem; color: var(--text-muted); font-style: italic; }
     .results-header { display: flex; flex-wrap: wrap; align-items: center; justify-content: space-between; gap: 1rem; margin-bottom: 1rem; padding-bottom: 1rem; border-bottom: 1px solid var(--border); }
     .results-meta { display: flex; flex-wrap: wrap; align-items: center; gap: 1rem; font-size: 0.875rem; color: var(--text-muted); }
     .results-meta-item i { margin-right: 0.35rem; color: var(--primary); }
@@ -494,12 +553,15 @@
     </div>
   </header>
 
-  <nav class="tabs" aria-label="Excel Comparison and Results">
+  <nav class="tabs" aria-label="Excel Comparison, Results and Historic data">
     <button type="button" class="tab active" data-tab="upload" aria-pressed="true" aria-current="page">
       <i class="fas fa-table-cells" aria-hidden="true"></i> Excel Comparison
     </button>
     <button type="button" class="tab" data-tab="results" aria-pressed="false">
       <i class="fas fa-file-lines" aria-hidden="true"></i> Results / Report
+    </button>
+    <button type="button" class="tab" data-tab="historic" aria-pressed="false" id="tabHistoric">
+      <i class="fas fa-history" aria-hidden="true"></i> Historic data
     </button>
   </nav>
 
@@ -620,6 +682,13 @@
             <!-- hidden: still used for API when different sheets per file needed later -->
             <select class="key-input sheet-select" id="expectedCompareSheet" aria-hidden="true" style="display: none;"></select>
             <select class="key-input sheet-select" id="actualCompareSheet" aria-hidden="true" style="display: none;"></select>
+          </div>
+          <div class="enable-export-row">
+            <span class="enable-export-label"><i class="fas fa-file-export" aria-hidden="true"></i> Enable Export</span>
+            <label class="toggle-switch" aria-label="Enable Export">
+              <input type="checkbox" id="enableExportToggle" checked>
+              <span class="toggle-slider"></span>
+            </label>
           </div>
           <div class="compare-footer">
             <button type="button" class="btn-compare" id="runCompare"><span class="btn-spinner" aria-hidden="true"></span><i class="fas fa-play" aria-hidden="true"></i><span class="btn-text">Compare Files</span></button>
@@ -752,6 +821,14 @@
         </div>
       </div>
     </div>
+
+    <div id="historicPanel" class="tab-content">
+      <div class="historic-data-section card">
+        <div class="historic-data-body">
+          <p class="historic-data-placeholder">Will be available soon</p>
+        </div>
+      </div>
+    </div>
     <footer class="main-footer">ABB • <span class="brand-powered-caps">Powered by DTC</span> <span class="brand-powered-normal">Infotech Pvt Ltd</span></footer>
   </main>
 
@@ -783,8 +860,10 @@
       const configText = document.getElementById('configText');
       const tabUpload = document.querySelector('[data-tab="upload"]');
       const tabResults = document.querySelector('[data-tab="results"]');
+      const tabHistoric = document.getElementById('tabHistoric');
       const uploadPanel = document.getElementById('uploadPanel');
       const resultsPanel = document.getElementById('resultsPanel');
+      const historicPanel = document.getElementById('historicPanel');
       const expectedPreviewEl = document.getElementById('expectedPreview');
       const actualPreviewEl = document.getElementById('actualPreview');
       const expectedSheetRow = document.getElementById('expectedSheetRow');
@@ -810,12 +889,15 @@
       const scDifference = document.getElementById('scDifference');
       const sheetToCompare = document.getElementById('sheetToCompare');
       const keyOptionGroup = document.getElementById('keyOptionGroup');
+      const enableExportToggle = document.getElementById('enableExportToggle');
+      const cellLevelExportBtns = document.querySelector('.cell-level-export-btns');
       const previewPlaceholderText = 'Upload a file to see preview.';
       let expectedSheetNames = [];
       let actualSheetNames = [];
       let sheetTabNames = [];
       let sheetTabCounts = {};
       let lastCompareData = null; // store latest comparison for export
+      let lastSheetCountData = null; // store sheet count comparison for HTML export
 
       function escapeHtml(s) {
         const div = document.createElement('div');
@@ -1208,16 +1290,33 @@
         tabUpload.setAttribute('aria-pressed', 'true');
         tabResults.classList.remove('active');
         tabResults.setAttribute('aria-pressed', 'false');
+        tabHistoric.classList.remove('active');
+        tabHistoric.setAttribute('aria-pressed', 'false');
         uploadPanel.classList.add('active');
         resultsPanel.classList.remove('active');
+        historicPanel.classList.remove('active');
       });
       tabResults.addEventListener('click', () => {
         tabResults.classList.add('active');
         tabResults.setAttribute('aria-pressed', 'true');
         tabUpload.classList.remove('active');
         tabUpload.setAttribute('aria-pressed', 'false');
+        tabHistoric.classList.remove('active');
+        tabHistoric.setAttribute('aria-pressed', 'false');
         resultsPanel.classList.add('active');
         uploadPanel.classList.remove('active');
+        historicPanel.classList.remove('active');
+      });
+      tabHistoric.addEventListener('click', () => {
+        tabHistoric.classList.add('active');
+        tabHistoric.setAttribute('aria-pressed', 'true');
+        tabUpload.classList.remove('active');
+        tabUpload.setAttribute('aria-pressed', 'false');
+        tabResults.classList.remove('active');
+        tabResults.setAttribute('aria-pressed', 'false');
+        historicPanel.classList.add('active');
+        uploadPanel.classList.remove('active');
+        resultsPanel.classList.remove('active');
       });
 
       function setResultsDateTime() {
@@ -1239,9 +1338,42 @@
       tabSheetValidation.addEventListener('click', () => showValidationTab('sheet'));
       tabCellValidation.addEventListener('click', () => showValidationTab('cell'));
 
+      function applyExportVisibility() {
+        var on = enableExportToggle && enableExportToggle.checked;
+        if (resultsExport) resultsExport.style.display = on ? 'flex' : 'none';
+        if (cellLevelExportBtns) cellLevelExportBtns.style.display = on ? 'flex' : 'none';
+      }
+      if (enableExportToggle) {
+        enableExportToggle.addEventListener('change', applyExportVisibility);
+      }
+
       document.getElementById('exportHtmlBtn').addEventListener('click', function() {
+        // Sheet count comparison only: export sheet validation report
+        if (lastSheetCountData && (!lastCompareData || !lastCompareData.data)) {
+          const d = lastSheetCountData;
+          const tsDate = (d.timestamp && d.timestamp.date) || new Date().toLocaleDateString();
+          const tsTime = (d.timestamp && d.timestamp.time) || new Date().toLocaleTimeString();
+          const diff = d.expected_sheets - d.actual_sheets;
+          const diffText = (diff > 0 ? '+' : '') + diff;
+          function esc(s) {
+            const div = document.createElement('div');
+            div.textContent = s == null ? '' : String(s);
+            return div.innerHTML;
+          }
+          function renderTags(names) {
+            if (!names || !names.length) return '<span class="presence-none">None</span>';
+            return names.map(function(n) { return '<span class="presence-tag">' + esc(n) + '</span>'; }).join('');
+          }
+          const html = '<!DOCTYPE html>\n<html lang="en">\n<head>\n  <meta charset="UTF-8">\n  <meta name="viewport" content="width=device-width, initial-scale=1.0">\n  <title>Sheet Validation Report - ' + esc(tsDate) + '</title>\n  <style>\n    * { margin: 0; padding: 0; box-sizing: border-box; }\n    body { font-family: -apple-system, BlinkMacSystemFont, \'Segoe UI\', Roboto, \'Helvetica Neue\', Arial, sans-serif; background: #f8fafc; color: #1e293b; line-height: 1.6; padding: 2rem; }\n    .container { max-width: 900px; margin: 0 auto; }\n    .header { background: linear-gradient(135deg, #2563eb 0%, #1d4ed8 100%); color: white; padding: 2rem; border-radius: 12px; margin-bottom: 2rem; }\n    .header h1 { font-size: 1.75rem; margin-bottom: 0.5rem; }\n    .timestamp { display: flex; gap: 2rem; margin-top: 1rem; font-size: 0.9rem; opacity: 0.9; }\n    .section { background: white; border-radius: 12px; margin-bottom: 1.5rem; box-shadow: 0 1px 3px rgba(0,0,0,0.1); overflow: hidden; }\n    .section h2 { font-size: 1.125rem; padding: 1rem 1.5rem; border-bottom: 1px solid #e2e8f0; display: flex; align-items: center; gap: 0.5rem; }\n    .section-body { padding: 1.25rem 1.5rem; }\n    .sheet-count-cards { display: grid; grid-template-columns: repeat(3, 1fr); gap: 1rem; }\n    .sc-card { background: #f8fafc; border-radius: 8px; padding: 1rem; text-align: center; }\n    .sc-card-label { display: block; font-size: 0.8125rem; color: #64748b; margin-bottom: 0.25rem; }\n    .sc-card-value { font-size: 1.5rem; font-weight: 700; }\n    .sc-card-diff { border-left: 4px solid #f59e0b; }\n    .sc-card-diff.match { border-left-color: #22c55e; }\n    .presence-section { margin-bottom: 1.25rem; }\n    .presence-section:last-child { margin-bottom: 0; }\n    .presence-heading-row { display: flex; align-items: center; justify-content: space-between; flex-wrap: wrap; gap: 0.5rem; margin-bottom: 0.5rem; }\n    .presence-heading { font-size: 1rem; display: flex; align-items: center; gap: 0.5rem; }\n    .presence-count { font-size: 0.875rem; color: #64748b; font-weight: 600; }\n    .presence-desc { font-size: 0.875rem; color: #64748b; margin-bottom: 0.5rem; }\n    .presence-tags, .presence-tag { display: inline; }\n    .presence-tag { background: #e2e8f0; color: #475569; padding: 0.2rem 0.5rem; border-radius: 6px; margin-right: 0.35rem; margin-bottom: 0.35rem; font-size: 0.8125rem; }\n    .presence-matched .presence-tag { background: #dcfce7; color: #166534; }\n    .presence-missing .presence-tag { background: #fee2e2; color: #991b1b; }\n    .presence-additional .presence-tag { background: #dbeafe; color: #1e40af; }\n    .presence-none { font-size: 0.875rem; color: #94a3b8; }\n    .footer { text-align: center; padding: 2rem; color: #94a3b8; font-size: 0.875rem; }\n    @media print { body { padding: 1rem; } .section { break-inside: avoid; } }\n  </style>\n</head>\n<body>\n  <div class="container">\n    <div class="header">\n      <h1>Sheet Validation Report</h1>\n      <p>Sheet count and presence comparison between Expected and Actual files</p>\n      <div class="timestamp">\n        <span>\uD83D\uDCC5 ' + esc(tsDate) + '</span>\n        <span>\uD83D\uDD50 ' + esc(tsTime) + '</span>\n      </div>\n    </div>\n    <div class="section">\n      <h2>Sheet Count Summary</h2>\n      <div class="section-body">\n        <div class="sheet-count-cards">\n          <div class="sc-card">\n            <span class="sc-card-label">' + esc(d.expected_filename) + '</span>\n            <span class="sc-card-value">' + esc(d.expected_sheets) + '</span>\n          </div>\n          <div class="sc-card">\n            <span class="sc-card-label">' + esc(d.actual_filename) + '</span>\n            <span class="sc-card-value">' + esc(d.actual_sheets) + '</span>\n          </div>\n          <div class="sc-card sc-card-diff' + (diff === 0 ? ' match' : '') + '">\n            <span class="sc-card-label">Difference</span>\n            <span class="sc-card-value">' + esc(diffText) + '</span>\n          </div>\n        </div>\n      </div>\n    </div>\n    <div class="section">\n      <h2>Sheet Presence Analysis</h2>\n      <div class="section-body">\n        <div class="presence-section presence-matched">\n          <div class="presence-heading-row">\n            <span class="presence-heading">\u2713 Matched Sheets</span>\n            <span class="presence-count">' + esc(d.matched.length) + ' sheet' + (d.matched.length !== 1 ? 's' : '') + '</span>\n          </div>\n          <p class="presence-desc">Sheets found in both files.</p>\n          <div class="presence-tags">' + renderTags(d.matched) + '</div>\n        </div>\n        <div class="presence-section presence-missing">\n          <div class="presence-heading-row">\n            <span class="presence-heading">\u2212 Missing Sheets</span>\n            <span class="presence-count">' + esc(d.missing.length) + ' sheet' + (d.missing.length !== 1 ? 's' : '') + '</span>\n          </div>\n          <p class="presence-desc">Present in Expected but missing in Actual:</p>\n          <div class="presence-tags">' + renderTags(d.missing) + '</div>\n        </div>\n        <div class="presence-section presence-additional">\n          <div class="presence-heading-row">\n            <span class="presence-heading">+ Additional Sheets</span>\n            <span class="presence-count">' + esc(d.additional.length) + ' sheet' + (d.additional.length !== 1 ? 's' : '') + '</span>\n          </div>\n          <p class="presence-desc">Present in Actual but not in Expected:</p>\n          <div class="presence-tags">' + renderTags(d.additional) + '</div>\n        </div>\n      </div>\n    </div>\n    <div class="footer">Generated by Excel Comparison Tool \u2022 Sheet Validation Report</div>\n  </div>\n</body>\n</html>';
+          const blob = new Blob([html], { type: 'text/html' });
+          const url = URL.createObjectURL(blob);
+          window.open(url, '_blank');
+          setTimeout(function() { URL.revokeObjectURL(url); }, 30000);
+          return;
+        }
+        // Cell/sheet comparison: export comparison report
         if (!lastCompareData || !lastCompareData.data) {
-          alert('Run a specific sheet comparison first to export the report.');
+          alert('Run a comparison first to export the report (Sheet count or specific sheet comparison).');
           return;
         }
         const d = lastCompareData;
@@ -1370,6 +1502,7 @@
         window.open(url, '_blank');
         setTimeout(function() { URL.revokeObjectURL(url); }, 30000);
       });
+
       document.getElementById('exportExcelBtn').addEventListener('click', function() {
         var f1 = expectedFile.files && expectedFile.files[0];
         var f2 = actualFile.files && actualFile.files[0];
@@ -1472,7 +1605,7 @@
           }
           hideResultsError();
           setResultsDateTime();
-          resultsExport.style.display = 'flex';
+          applyExportVisibility();
           specificResultContent.style.display = 'block';
           const config = data.config || {};
           configText.innerHTML = 'Comparing <code>' + escapeHtml(String(config.file1 || 'file1')) + '</code> vs <code>' + escapeHtml(String(config.file2 || 'file2')) + '</code>' +
@@ -1553,7 +1686,7 @@
             } else {
               hideResultsError();
               setResultsDateTime();
-              resultsExport.style.display = 'flex';
+              applyExportVisibility();
               configText.textContent = 'Sheet count comparison';
               var expectedName = data.expected_filename || 'Expected file';
               var actualName = data.actual_filename || 'Actual file';
@@ -1571,6 +1704,18 @@
               var matched = exp.filter(function(n) { return setAct.has(n); });
               var missing = exp.filter(function(n) { return !setAct.has(n); });
               var additional = act.filter(function(n) { return !setExp.has(n); });
+              lastSheetCountData = {
+                expected_sheets: data.expected_sheets,
+                actual_sheets: data.actual_sheets,
+                expected_filename: data.expected_filename || 'Expected file',
+                actual_filename: data.actual_filename || 'Actual file',
+                sheet_names_expected: exp,
+                sheet_names_actual: act,
+                matched: matched,
+                missing: missing,
+                additional: additional,
+                timestamp: { date: resultsDate.textContent || new Date().toLocaleDateString(), time: resultsTime.textContent || new Date().toLocaleTimeString() }
+              };
               function sheetLabel(c) { return c + ' sheet' + (c !== 1 ? 's' : ''); }
               document.getElementById('presenceMatchedCount').textContent = sheetLabel(matched.length);
               document.getElementById('presenceMissingCount').textContent = sheetLabel(missing.length);

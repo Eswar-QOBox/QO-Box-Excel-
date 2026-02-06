@@ -38,8 +38,29 @@ except ImportError:
 
 BASE = Path(__file__).resolve().parent
 INPUT_DIR = BASE / "input"
+API_DOCS_DIR = BASE / "api_docs"
 DEFAULT_FILE1 = INPUT_DIR / "file1.xlsx"
 DEFAULT_FILE2 = INPUT_DIR / "file2.xlsx"
+
+
+# Swagger / OpenAPI docs
+@app.route("/api-docs")
+def swagger_ui():
+    """Serve Swagger UI for API documentation."""
+    return render_template("swagger_ui.html")
+
+
+@app.route("/api-docs/openapi.json")
+def openapi_spec():
+    """Serve OpenAPI 3.0 specification."""
+    import json
+    spec_path = API_DOCS_DIR / "openapi.json"
+    if not spec_path.exists():
+        return jsonify({"error": "OpenAPI spec not found"}), 404
+    with open(spec_path, encoding="utf-8") as f:
+        spec = json.load(f)
+    return jsonify(spec)
+
 
 # Serve logo asset
 @app.route("/logo")

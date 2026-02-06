@@ -70,4 +70,9 @@ Open http://127.0.0.1:5000 and click **Run comparison**. Check **Compare by row 
 
 API: `GET /api/compare` returns the same JSON (uses default `input/file1.xlsx` and `input/file2.xlsx`). Use `?key=none` for position-based comparison. Optional query params: `key`, `sheet`, `file1`, `file2`.
 
+### API documentation (Swagger & Postman)
+
+- **Swagger UI**: With the app running, open **http://127.0.0.1:5000/api-docs** for interactive API docs (OpenAPI 3.0).
+- **Postman**: Import the collection from **`postman/Excel_Compare_API.postman_collection.json`**. Set the `baseUrl` variable (e.g. `http://localhost:5000`) and use the requests for file-info, preview, compare, and export.
+
 For production deployment (systemd, Nginx, gunicorn), see **[DEPLOY.md](DEPLOY.md)**.

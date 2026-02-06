@@ -1,0 +1,166 @@
+{
+  "info": {
+    "name": "Excel Comparison API",
+    "description": "Compare two Excel files: sheet count, cell-level comparison, preview, and export to Excel.",
+    "schema": "https://schema.getpostman.com/json/collection/v2.1.0/collection.json",
+    "_exporter_id": "excel-compare"
+  },
+  "variable": [
+    { "key": "baseUrl", "value": "http://localhost:5000", "type": "string" }
+  ],
+  "item": [
+    {
+      "name": "File & Preview",
+      "item": [
+        {
+          "name": "Get file info",
+          "request": {
+            "method": "POST",
+            "header": [],
+            "body": {
+              "mode": "formdata",
+              "formdata": [
+                { "key": "file", "type": "file", "src": "", "description": "Excel file (.xlsx, .xls)" }
+              ]
+            },
+            "url": "{{baseUrl}}/api/file-info",
+            "description": "Return sheet count and sheet names for an uploaded Excel file."
+          }
+        },
+        {
+          "name": "Preview file",
+          "request": {
+            "method": "POST",
+            "header": [],
+            "body": {
+              "mode": "formdata",
+              "formdata": [
+                { "key": "file", "type": "file", "src": "", "description": "Excel file" },
+                { "key": "sheet", "value": "0", "type": "text", "description": "Sheet index (0-based)" }
+              ]
+            },
+            "url": "{{baseUrl}}/api/preview",
+            "description": "Return first N rows of an uploaded Excel file for preview."
+          }
+        }
+      ]
+    },
+    {
+      "name": "Sheet count",
+      "item": [
+        {
+          "name": "Compare sheet count",
+          "request": {
+            "method": "POST",
+            "header": [],
+            "body": {
+              "mode": "formdata",
+              "formdata": [
+                { "key": "expected_file", "type": "file", "src": "", "description": "Expected Excel file" },
+                { "key": "actual_file", "type": "file", "src": "", "description": "Actual Excel file" }
+              ]
+            },
+            "url": "{{baseUrl}}/api/compare-sheet-count",
+            "description": "Compare only the number of sheets in two uploaded files."
+          }
+        }
+      ]
+    },
+    {
+      "name": "Compare",
+      "item": [
+        {
+          "name": "Compare (GET - default files)",
+          "request": {
+            "method": "GET",
+            "header": [],
+            "url": {
+              "raw": "{{baseUrl}}/api/compare?key=EMP_ID&sheet=0",
+              "host": ["{{baseUrl}}"],
+              "path": ["api", "compare"],
+              "query": [
+                { "key": "key", "value": "EMP_ID", "description": "Primary key column; use 'none' for position-based" },
+                { "key": "sheet", "value": "0", "description": "Sheet index" },
+                { "key": "expected_sheet", "value": "0", "disabled": true },
+                { "key": "actual_sheet", "value": "0", "disabled": true }
+              ]
+            },
+            "description": "Run comparison using default files (input/file1.xlsx, input/file2.xlsx)."
+          }
+        },
+        {
+          "name": "Compare (POST - upload files)",
+          "request": {
+            "method": "POST",
+            "header": [],
+            "body": {
+              "mode": "formdata",
+              "formdata": [
+                { "key": "expected_file", "type": "file", "src": "", "description": "Expected Excel" },
+                { "key": "actual_file", "type": "file", "src": "", "description": "Actual Excel" },
+                { "key": "key", "value": "EMP_ID", "type": "text", "description": "Primary key; use 'none' for position-based" },
+                { "key": "expected_sheet", "value": "0", "type": "text" },
+                { "key": "actual_sheet", "value": "0", "type": "text" }
+              ]
+            },
+            "url": "{{baseUrl}}/api/compare",
+            "description": "Run comparison with uploaded expected_file and actual_file."
+          }
+        }
+      ]
+    },
+    {
+      "name": "Export",
+      "item": [
+        {
+          "name": "Export comparison to Excel",
+          "request": {
+            "method": "POST",
+            "header": [],
+            "body": {
+              "mode": "formdata",
+              "formdata": [
+                { "key": "expected_file", "type": "file", "src": "", "description": "Expected Excel" },
+                { "key": "actual_file", "type": "file", "src": "", "description": "Actual Excel" },
+                { "key": "key", "value": "EMP_ID", "type": "text" },
+                { "key": "expected_sheet", "value": "0", "type": "text" },
+                { "key": "actual_sheet", "value": "0", "type": "text" }
+              ]
+            },
+            "url": "{{baseUrl}}/api/export-excel",
+            "description": "Run comparison and download result as Excel (comparison_result.xlsx)."
+          }
+        },
+        {
+          "name": "Export cell-level to Excel",
+          "request": {
+            "method": "POST",
+            "header": [
+              { "key": "Content-Type", "value": "application/json" }
+            ],
+            "body": {
+              "mode": "raw",
+              "raw": "{\n  \"rows\": [\n    {\n      \"sheetName\": \"Sheet1\",\n      \"row\": 1,\n      \"column\": \"ColumnName\",\n      \"expected\": \"expected value\",\n      \"actual\": \"actual value\"\n    }\n  ]\n}"
+            },
+            "url": "{{baseUrl}}/api/export-cell-level-excel",
+            "description": "Export cell-level comparison rows to Excel. JSON body: { \"rows\": [ { sheetName, row, column, expected, actual }, ... ] }."
+          }
+        }
+      ]
+    },
+    {
+      "name": "Assets",
+      "item": [
+        {
+          "name": "Get logo",
+          "request": {
+            "method": "GET",
+            "header": [],
+            "url": "{{baseUrl}}/logo",
+            "description": "Serve the ABB logo image."
+          }
+        }
+      ]
+    }
+  ]
+}

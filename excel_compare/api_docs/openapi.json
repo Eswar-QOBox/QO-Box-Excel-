@@ -1,0 +1,304 @@
+{
+  "openapi": "3.0.3",
+  "info": {
+    "title": "Excel Comparison API",
+    "description": "API for comparing two Excel files: sheet count validation, cell-level comparison, and export to Excel or HTML.",
+    "version": "1.0.0"
+  },
+  "servers": [
+    { "url": "/", "description": "Current host" }
+  ],
+  "paths": {
+    "/api/file-info": {
+      "post": {
+        "summary": "Get file info",
+        "description": "Return sheet count and sheet names for an uploaded Excel file (for UI display).",
+        "operationId": "fileInfo",
+        "requestBody": {
+          "required": true,
+          "content": {
+            "multipart/form-data": {
+              "schema": {
+                "type": "object",
+                "required": ["file"],
+                "properties": {
+                  "file": { "type": "string", "format": "binary", "description": "Excel file (.xlsx, .xls)" }
+                }
+              }
+            }
+          }
+        },
+        "responses": {
+          "200": {
+            "description": "File info",
+            "content": {
+              "application/json": {
+                "schema": {
+                  "type": "object",
+                  "properties": {
+                    "sheets": { "type": "integer" },
+                    "sheet_names": { "type": "array", "items": { "type": "string" } }
+                  }
+                }
+              }
+            }
+          },
+          "400": {
+            "description": "No file or invalid file",
+            "content": {
+              "application/json": {
+                "schema": { "$ref": "#/components/schemas/Error" }
+              }
+            }
+          }
+        }
+      }
+    },
+    "/api/compare-sheet-count": {
+      "post": {
+        "summary": "Compare sheet count",
+        "description": "Compare only the number of sheets in two uploaded files. Returns expected/actual sheet counts and names.",
+        "operationId": "compareSheetCount",
+        "requestBody": {
+          "required": true,
+          "content": {
+            "multipart/form-data": {
+              "schema": {
+                "type": "object",
+                "required": ["expected_file", "actual_file"],
+                "properties": {
+                  "expected_file": { "type": "string", "format": "binary", "description": "Expected Excel file" },
+                  "actual_file": { "type": "string", "format": "binary", "description": "Actual Excel file" },
+                  "file1": { "type": "string", "format": "binary", "description": "Alias for expected_file" },
+                  "file2": { "type": "string", "format": "binary", "description": "Alias for actual_file" }
+                }
+              }
+            }
+          }
+        },
+        "responses": {
+          "200": {
+            "description": "Sheet count comparison result",
+            "content": {
+              "application/json": {
+                "schema": {
+                  "type": "object",
+                  "properties": {
+                    "expected_sheets": { "type": "integer" },
+                    "actual_sheets": { "type": "integer" },
+                    "match": { "type": "boolean" },
+                    "expected_filename": { "type": "string" },
+                    "actual_filename": { "type": "string" },
+                    "sheet_names_expected": { "type": "array", "items": { "type": "string" } },
+                    "sheet_names_actual": { "type": "array", "items": { "type": "string" } }
+                  }
+                }
+              }
+            }
+          },
+          "400": {
+            "description": "Missing files or error",
+            "content": {
+              "application/json": {
+                "schema": { "$ref": "#/components/schemas/Error" }
+              }
+            }
+          }
+        }
+      }
+    },
+    "/api/preview": {
+      "post": {
+        "summary": "Preview Excel file",
+        "description": "Return first N rows of an uploaded Excel file for preview. Accept form key 'sheet' (0-based index, default 0).",
+        "operationId": "preview",
+        "requestBody": {
+          "required": true,
+          "content": {
+            "multipart/form-data": {
+              "schema": {
+                "type": "object",
+                "required": ["file"],
+                "properties": {
+                  "file": { "type": "string", "format": "binary", "description": "Excel file" },
+                  "sheet": { "type": "string", "description": "Sheet index (default 0)" }
+                }
+              }
+            }
+          }
+        },
+        "responses": {
+          "200": {
+            "description": "Preview data",
+            "content": {
+              "application/json": {
+                "schema": {
+                  "type": "object",
+                  "properties": {
+                    "columns": { "type": "array", "items": { "type": "string" } },
+                    "rows": { "type": "array", "items": { "type": "object" } },
+                    "total_rows": { "type": "integer" }
+                  }
+                }
+              }
+            }
+          },
+          "400": {
+            "description": "No file or error",
+            "content": {
+              "application/json": {
+                "schema": { "$ref": "#/components/schemas/Error" }
+              }
+            }
+          }
+        }
+      }
+    },
+    "/api/compare": {
+      "get": {
+        "summary": "Compare (GET)",
+        "description": "Run comparison using default files (input/file1.xlsx, input/file2.xlsx). Query params: key, sheet, expected_sheet, actual_sheet, file1, file2.",
+        "operationId": "compareGet",
+        "parameters": [
+          { "name": "key", "in": "query", "schema": { "type": "string", "default": "EMP_ID" }, "description": "Primary key column; use 'none' for position-based compare" },
+          { "name": "sheet", "in": "query", "schema": { "type": "string", "default": "0" }, "description": "Sheet index for both files" },
+          { "name": "expected_sheet", "in": "query", "schema": { "type": "string" } },
+          { "name": "actual_sheet", "in": "query", "schema": { "type": "string" } }
+        ],
+        "responses": {
+          "200": {
+            "description": "Comparison result (summary, added_rows, removed_rows, modified_rows, config)"
+          },
+          "400": { "description": "File not found, primary key missing/invalid", "content": { "application/json": { "schema": { "$ref": "#/components/schemas/Error" } } } }
+        }
+      },
+      "post": {
+        "summary": "Compare (POST)",
+        "description": "Run comparison. Send expected_file and actual_file as multipart, or file1/file2 paths. Form/query: key, expected_sheet, actual_sheet.",
+        "operationId": "comparePost",
+        "requestBody": {
+          "content": {
+            "multipart/form-data": {
+              "schema": {
+                "type": "object",
+                "properties": {
+                  "expected_file": { "type": "string", "format": "binary" },
+                  "actual_file": { "type": "string", "format": "binary" },
+                  "file1": { "type": "string", "format": "binary" },
+                  "file2": { "type": "string", "format": "binary" },
+                  "key": { "type": "string", "default": "EMP_ID" },
+                  "expected_sheet": { "type": "string", "default": "0" },
+                  "actual_sheet": { "type": "string", "default": "0" },
+                  "sheet": { "type": "string" }
+                }
+              }
+            }
+          }
+        },
+        "responses": {
+          "200": { "description": "Comparison result" },
+          "400": { "description": "Bad request", "content": { "application/json": { "schema": { "$ref": "#/components/schemas/Error" } } } }
+        }
+      }
+    },
+    "/api/export-excel": {
+      "post": {
+        "summary": "Export comparison to Excel",
+        "description": "Run same comparison as /api/compare and return Excel file. Same form params as compare (expected_file, actual_file, key, expected_sheet, actual_sheet).",
+        "operationId": "exportExcel",
+        "requestBody": {
+          "required": true,
+          "content": {
+            "multipart/form-data": {
+              "schema": {
+                "type": "object",
+                "required": ["expected_file", "actual_file"],
+                "properties": {
+                  "expected_file": { "type": "string", "format": "binary" },
+                  "actual_file": { "type": "string", "format": "binary" },
+                  "key": { "type": "string", "default": "EMP_ID" },
+                  "expected_sheet": { "type": "string", "default": "0" },
+                  "actual_sheet": { "type": "string", "default": "0" },
+                  "sheet": { "type": "string" }
+                }
+              }
+            }
+          }
+        },
+        "responses": {
+          "200": {
+            "description": "Excel file attachment (comparison_result.xlsx)",
+            "content": {
+              "application/vnd.openxmlformats-officedocument.spreadsheetml.sheet": { "schema": { "type": "string", "format": "binary" } }
+            }
+          },
+          "400": { "description": "Bad request", "content": { "application/json": { "schema": { "$ref": "#/components/schemas/Error" } } } }
+        }
+      }
+    },
+    "/api/export-cell-level-excel": {
+      "post": {
+        "summary": "Export cell-level results to Excel",
+        "description": "Export cell-level comparison rows to Excel. Expects JSON body: { \"rows\": [ { \"sheetName\", \"row\", \"column\", \"expected\", \"actual\" }, ... ] }.",
+        "operationId": "exportCellLevelExcel",
+        "requestBody": {
+          "required": true,
+          "content": {
+            "application/json": {
+              "schema": {
+                "type": "object",
+                "required": ["rows"],
+                "properties": {
+                  "rows": {
+                    "type": "array",
+                    "items": {
+                      "type": "object",
+                      "properties": {
+                        "sheetName": { "type": "string" },
+                        "row": { "type": ["integer", "string"] },
+                        "column": { "type": "string" },
+                        "expected": { "type": "string" },
+                        "actual": { "type": "string" }
+                      }
+                    }
+                  }
+                }
+              }
+            }
+          }
+        },
+        "responses": {
+          "200": {
+            "description": "Excel file attachment (cell_level_comparison.xlsx)",
+            "content": {
+              "application/vnd.openxmlformats-officedocument.spreadsheetml.sheet": { "schema": { "type": "string", "format": "binary" } }
+            }
+          },
+          "400": { "description": "No rows or error", "content": { "application/json": { "schema": { "$ref": "#/components/schemas/Error" } } } }
+        }
+      }
+    },
+    "/logo": {
+      "get": {
+        "summary": "Get logo",
+        "description": "Serve the ABB logo image.",
+        "operationId": "logo",
+        "responses": {
+          "200": { "description": "Logo image (webp)" },
+          "404": { "description": "Logo not found" }
+        }
+      }
+    }
+  },
+  "components": {
+    "schemas": {
+      "Error": {
+        "type": "object",
+        "properties": {
+          "error": { "type": "string" },
+          "code": { "type": "string" }
+        }
+      }
+    }
+  }
+}
