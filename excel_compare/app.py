@@ -114,6 +114,18 @@ def index():
     return render_template("index.html")
 
 
+@app.route("/ode")
+def index_ode():
+    """Same as main page (merged ode into index). Kept for backwards compatibility."""
+    return render_template("index.html")
+
+
+@app.route("/icon-choices")
+def icon_choices():
+    """Preview sheet icon options to choose from."""
+    return render_template("icon_choices.html")
+
+
 @app.route("/api/file-info", methods=["POST"])
 def api_file_info():
     """Return sheet count and names for an uploaded Excel file (for UI display)."""

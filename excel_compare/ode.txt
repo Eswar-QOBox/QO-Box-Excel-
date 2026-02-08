@@ -414,24 +414,9 @@
     .results-meta-item i { margin-right: 0.35rem; color: var(--primary); }
     .results-status { display: inline-flex; align-items: center; gap: 0.35rem; padding: 0.35rem 0.75rem; background: #dcfce7; color: #166534; border-radius: 999px; font-size: 0.8125rem; font-weight: 600; }
     .results-status .status-dot { font-size: 0.5rem; color: #22c55e; }
-    .results-export { display: flex; align-items: center; gap: 0.5rem; flex-wrap: wrap; }
-    .results-export-label { font-size: 0.8125rem; font-weight: 600; color: var(--text-muted); margin: 0; }
-    .btn-export {
-      display: inline-flex; align-items: center; gap: 0.5rem;
-      padding: 0.5rem 1rem; border-radius: 8px; font-size: 0.875rem; font-weight: 600;
-      cursor: pointer; border: none; transition: transform 0.15s ease, box-shadow 0.15s ease;
-      box-shadow: 0 1px 2px rgba(0,0,0,.06);
-    }
-    .btn-export:focus-visible { outline: 2px solid var(--primary); outline-offset: 2px; }
-    .btn-export:hover { transform: translateY(-1px); box-shadow: 0 2px 6px rgba(0,0,0,.1); }
-    .btn-export:active { transform: translateY(0); box-shadow: 0 1px 2px rgba(0,0,0,.06); }
-    .btn-export-html { background: linear-gradient(180deg, #f8fafc 0%, #f1f5f9 100%); color: #1e293b; border: 1px solid #e2e8f0; }
-    .btn-export-html:hover { background: linear-gradient(180deg, #f1f5f9 0%, #e2e8f0 100%); color: var(--primary); }
-    .btn-export-html i { color: #64748b; }
-    .btn-export-html:hover i { color: var(--primary); }
-    .btn-export-excel { background: linear-gradient(180deg, #166534 0%, #14532d 100%); color: #fff; }
-    .btn-export-excel:hover { background: linear-gradient(180deg, #15803d 0%, #166534 100%); color: #fff; box-shadow: 0 2px 8px rgba(22,101,52,.35); }
-    .btn-export-excel i { opacity: 0.95; }
+    .results-export { display: flex; gap: 0.5rem; }
+    .btn-export { display: inline-flex; align-items: center; gap: 0.4rem; padding: 0.4rem 0.75rem; border: 1px solid var(--border); border-radius: 6px; background: var(--card-bg); font-size: 0.8125rem; cursor: pointer; color: var(--text); }
+    .btn-export:hover { background: #f1f5f9; }
     .results-validation-tabs { display: flex; gap: 0.25rem; margin-bottom: 1rem; }
     .validation-tab { display: flex; align-items: center; gap: 0.5rem; padding: 0.5rem 1rem; border: none; background: var(--tab-inactive); color: var(--text-muted); border-radius: 8px; font-size: 0.875rem; font-weight: 500; cursor: pointer; }
     .validation-tab:hover { background: #e2e8f0; color: var(--text); }
@@ -476,92 +461,55 @@
     .presence-additional .presence-heading { color: #0c4a6e; }
     .presence-additional .presence-desc { color: rgba(2,132,199,.8); }
     .presence-additional .presence-tag { background: #fff; color: #0284c7; border: 1px solid #bae6fd; font-weight: 700; box-shadow: 0 1px 2px rgba(0,0,0,.05); }
-    .cell-level-results {
-      background: var(--card-bg); border: 1px solid var(--border); border-radius: 12px;
-      padding: 1.5rem; margin-bottom: 1rem;
-    }
-    .cell-level-header-row { margin-bottom: 1.25rem; }
-    .cell-level-title { margin: 0; font-size: 1.125rem; font-weight: 700; color: var(--text); letter-spacing: -0.01em; }
-    .cell-level-subtitle { margin: 0.25rem 0 0 0; font-size: 0.8125rem; color: var(--text-muted); }
-    .cell-level-sheet-select {
-      display: flex; align-items: center; gap: 0.75rem; flex-wrap: wrap;
-      margin-bottom: 1rem; padding: 0.75rem 1rem; background: #f8fafc; border-radius: 10px; border: 1px solid var(--border);
-    }
-    .cell-level-sheet-select .option-group-label {
-      margin: 0; font-size: 0.8125rem; font-weight: 600; color: var(--text-muted); flex-shrink: 0;
-    }
-    .cell-level-sheet-tabs { display: flex; flex-wrap: wrap; gap: 0.5rem; flex: 1; min-width: 0; align-items: center; }
-    .cell-level-sheet-badge {
-      font-size: 0.75rem; color: var(--text-muted); flex-shrink: 0;
-    }
-    .cell-level-sheet-tab {
-      display: inline-flex; align-items: center; gap: 0.35rem;
-      padding: 0.4rem 0.75rem; border-radius: 8px; border: 1px solid var(--border);
-      background: #fff; color: var(--text); font-size: 0.8125rem; font-weight: 500; cursor: default;
-      transition: border-color 0.15s, background 0.15s;
-    }
-    .cell-level-sheet-tab i.fa-file-lines { color: var(--primary); font-size: 0.75rem; opacity: 0.9; }
-    .cell-level-sheet-tab.active {
-      border-color: var(--primary); background: var(--primary-light); color: var(--primary); font-weight: 600;
-    }
-    .cell-level-sheet-tab.active i { color: var(--primary); }
-    .cell-level-sheet-tab .sheet-tab-count {
-      margin-left: 0.2rem; padding: 0.15rem 0.4rem; min-width: 1.1rem; text-align: center;
-      border-radius: 999px; font-size: 0.7rem; font-weight: 600; background: #fef3c7; color: #92400e;
-    }
-    .cell-level-sheet-tab.active .sheet-tab-count { background: var(--primary); color: #fff; }
-    .cell-level-sheet-tab.sheet-ok .sheet-tab-count {
-      padding: 0; min-width: 0; background: transparent; color: var(--added); font-size: 0.75rem;
-    }
+    .cell-level-results { background: var(--card-bg); border: 1px solid var(--border); border-radius: 12px; padding: 1.25rem; margin-bottom: 1rem; }
+    .cell-level-header-row { display: flex; flex-wrap: wrap; align-items: flex-start; justify-content: space-between; gap: 1rem; margin-bottom: 0.5rem; }
+    .cell-level-header-row .cell-level-title { margin-bottom: 0.25rem; }
+    .cell-level-export-btns { display: flex; gap: 0.5rem; flex-shrink: 0; }
+    .cell-level-title { margin: 0 0 0.25rem 0; font-size: 1.25rem; font-weight: 700; color: var(--text); }
+    .cell-level-subtitle { margin: 0 0 1rem 0; font-size: 0.875rem; color: var(--text-muted); }
+    .cell-level-sheet-select { display: flex; align-items: center; gap: 0.75rem; margin-bottom: 1rem; flex-wrap: wrap; }
+    .cell-level-sheet-select .option-group-label { margin-bottom: 0; display: inline-flex; align-items: center; gap: 0.4rem; font-size: 0.875rem; font-weight: 600; color: var(--text); }
+    .cell-level-sheet-select .option-group-label i { color: var(--primary); }
+    .cell-level-sheet-tabs { display: flex; flex-wrap: wrap; gap: 0.5rem; flex: 1; min-width: 0; }
+    .cell-level-sheet-badge { padding: 0.25rem 0.6rem; border-radius: 999px; font-size: 0.75rem; font-weight: 600; color: var(--text-muted); background: var(--card-bg); border: 1px solid var(--border); margin-left: auto; flex-shrink: 0; }
+    .cell-level-sheet-tab { display: inline-flex; align-items: center; gap: 0.4rem; padding: 0.5rem 0.75rem; border: none; border-radius: 8px; background: var(--card-bg); color: var(--text); font-size: 0.8125rem; font-weight: 600; cursor: default; box-shadow: 0 1px 2px rgba(0,0,0,.06); }
+    .cell-level-sheet-tab i { color: var(--primary); font-size: 0.875rem; }
+    .cell-level-sheet-tab.active { background: var(--primary); color: white; box-shadow: none; }
+    .cell-level-sheet-tab.active i { color: white; }
+    .cell-level-sheet-tab .sheet-tab-count { margin-left: 0.15rem; padding: 0.2rem 0.5rem; min-width: 1.25rem; text-align: center; border-radius: 999px; font-size: 0.75rem; font-weight: 600; background: #fef9c3; color: #a16207; }
+    .cell-level-sheet-tab.active .sheet-tab-count { background: rgba(255,255,255,.35); color: white; }
+    .cell-level-sheet-tab.sheet-ok .sheet-tab-count { padding: 0; min-width: 0; background: transparent; color: inherit; }
     .cell-level-sheet-tab.sheet-ok .sheet-tab-count i { color: var(--added); }
-    .cell-level-sheet-tab.active.sheet-ok .sheet-tab-count i { color: var(--primary); }
-    .cell-level-filters-row {
-      display: flex; flex-wrap: wrap; align-items: center; gap: 0.75rem; margin-bottom: 0.75rem;
-    }
-    .cell-level-tabs { display: flex; flex-wrap: wrap; gap: 0.4rem; align-items: center; }
-    .cell-tab {
-      display: inline-flex; align-items: center; gap: 0.35rem;
-      padding: 0.4rem 0.65rem; border: 1px solid var(--border); border-radius: 6px;
-      background: #fff; color: var(--text-muted); font-size: 0.8125rem; font-weight: 500; cursor: pointer;
-      transition: background 0.15s, color 0.15s, border-color 0.15s;
-    }
-    .cell-tab:hover { background: #f8fafc; color: var(--text); border-color: #cbd5e1; }
-    .cell-tab.active { background: #fef3c7; border-color: #f59e0b; color: #92400e; font-weight: 600; }
-    .cell-tab-count { margin-left: 0.2rem; padding: 0.15rem 0.4rem; min-width: 1.1rem; text-align: center; border-radius: 999px; font-size: 0.7rem; font-weight: 600; }
+    .cell-level-sheet-tab.active.sheet-ok .sheet-tab-count i { color: white; }
+    .cell-level-tabs { display: flex; flex-wrap: wrap; gap: 0.5rem; margin-bottom: 1rem; }
+    .cell-tab { display: inline-flex; align-items: center; gap: 0.4rem; padding: 0.5rem 0.75rem; border: 1px solid var(--border); border-radius: 8px; background: var(--card-bg); color: var(--text-muted); font-size: 0.8125rem; font-weight: 600; cursor: pointer; }
+    .cell-tab:hover { background: #f8fafc; color: var(--text); }
+    .cell-tab.active { background: #fef3c7; border-color: #f59e0b; color: #92400e; }
+    .cell-tab.active .cell-tab-count { background: #fcd34d; color: #92400e; }
+    .cell-tab-count { margin-left: 0.15rem; padding: 0.2rem 0.5rem; min-width: 1.25rem; text-align: center; border-radius: 999px; font-size: 0.75rem; font-weight: 600; }
     .cell-tab[data-cell-filter="difference"] .cell-tab-count { background: #fed7aa; color: #c2410c; }
-    .cell-tab[data-cell-filter="difference"].active .cell-tab-count { background: #f59e0b; color: #fff; }
+    .cell-tab[data-cell-filter="difference"].active .cell-tab-count { background: #fcd34d; color: #92400e; }
     .cell-tab[data-cell-filter="missing"] .cell-tab-count { background: #fecaca; color: #991b1b; }
     .cell-tab[data-cell-filter="additional"] .cell-tab-count { background: #bae6fd; color: #0369a1; }
-    .cell-level-search-wrap { flex: 1; min-width: 180px; max-width: 280px; }
-    .cell-level-search {
-      width: 100%; padding: 0.45rem 0.75rem; border: 1px solid var(--border); border-radius: 8px;
-      font-size: 0.8125rem; background: #fff;
-    }
+    .cell-level-search-row { display: flex; flex-wrap: wrap; align-items: center; gap: 0.75rem; margin-bottom: 0.75rem; }
+    .cell-level-search { flex: 1; min-width: 200px; padding: 0.55rem 0.85rem; border: 1px solid var(--border); border-radius: var(--radius-sm); font-size: 0.875rem; }
     .cell-level-search::placeholder { color: var(--text-muted); }
-    .cell-level-search:focus { outline: none; border-color: var(--primary); box-shadow: 0 0 0 2px rgba(37,99,235,0.15); }
-    .cell-level-found { margin: 0.25rem 0 0 0; font-size: 0.75rem; color: var(--text-muted); }
-    .cell-level-table-wrap { overflow-x: auto; border: 1px solid var(--border); border-radius: 10px; margin-top: 0.5rem; }
-    .cell-level-table { width: 100%; border-collapse: collapse; font-size: 0.8125rem; }
-    .cell-level-table th {
-      text-align: left; padding: 0.5rem 0.75rem; background: #f8fafc; color: var(--text-muted);
-      font-weight: 600; font-size: 0.75rem; text-transform: uppercase; letter-spacing: 0.03em; border-bottom: 1px solid var(--border);
-    }
+    .cell-level-found { margin: 0; font-size: 0.8125rem; color: var(--text-muted); }
+    .cell-level-table-wrap { overflow-x: auto; margin-bottom: 0.5rem; }
+    .cell-level-table { width: 100%; border-collapse: collapse; font-size: 0.875rem; }
+    .cell-level-table th { text-align: left; padding: 0.5rem 0.75rem; background: #f8fafc; color: var(--primary); font-weight: 600; border-bottom: 1px solid var(--border); }
     .cell-level-table td { padding: 0.5rem 0.75rem; border-bottom: 1px solid var(--border); vertical-align: middle; }
     .cell-level-table tbody tr:nth-child(even) { background: #fafafa; }
     .cell-level-table tbody tr:nth-child(odd) { background: #fff; }
     .cell-level-table tbody tr:hover { background: var(--primary-light); }
-    .cell-level-table tbody tr:last-child td { border-bottom: none; }
-    .th-dot { display: inline-block; width: 5px; height: 5px; border-radius: 50%; margin-right: 0.3rem; vertical-align: middle; }
+    .th-dot { display: inline-block; width: 6px; height: 6px; border-radius: 50%; margin-right: 0.35rem; vertical-align: middle; }
     .th-dot.expected-dot { background: #dc2626; }
     .th-dot.actual-dot { background: #16a34a; }
-    .cell-level-empty {
-      text-align: center; padding: 2rem 1rem; font-size: 0.875rem; color: var(--text-muted);
-      background: #f8fafc; border-radius: 10px; margin-top: 0.5rem; border: 1px dashed var(--border);
-    }
     .cell-pill { display: inline-block; padding: 0.25rem 0.5rem; border-radius: 6px; font-size: 0.8125rem; font-weight: 500; }
     .cell-pill.expected { background: #fee2e2; color: #991b1b; }
     .cell-pill.actual { background: #dcfce7; color: #166534; }
     .cell-pill.missing { background: #f1f5f9; color: var(--text-muted); }
+    .cell-level-empty { margin: 0.75rem 0 0; font-size: 0.875rem; color: var(--text-muted); font-style: italic; }
     .results-summary .label { display: block; font-size: 0.8125rem; font-weight: 500; color: #374151; margin-bottom: 0.35rem; }
     .results-summary .value { display: block; font-size: 1.5rem; font-weight: 700; color: #1f2937; }
     .config-text { font-size: 0.8125rem; color: var(--text-muted); margin-bottom: 1rem; }
@@ -600,7 +548,7 @@
     .error-msg ul { margin: 0.5rem 0 0 1rem; }
 
     .blur {
-      filter: blur(1px);
+      filter: blur(2px);
       pointer-events: none;
       opacity: 0.6;
     }
@@ -625,7 +573,7 @@
 <body>
   <header class="header">
     <div class="header-left">
-      <div class="header-icon"><i class="fas fa-file-lines"></i></div>
+      <div class="header-icon"><i class="fas fa-table-cells"></i></div>
       <div>
         <h1 class="header-title">Excel Comparison Tool</h1>
         <p class="header-subtitle">Compare and analyze Excel files</p>
@@ -642,7 +590,7 @@
 
   <nav class="tabs" aria-label="Excel Comparison, Results and Historic data">
     <button type="button" class="tab active" data-tab="upload" aria-pressed="true" aria-current="page">
-      <i class="fas fa-file-lines" aria-hidden="true"></i> Excel Comparison
+      <i class="fas fa-table-cells" aria-hidden="true"></i> Excel Comparison
     </button>
     <button type="button" class="tab" data-tab="results" aria-pressed="false">
       <i class="fas fa-file-lines" aria-hidden="true"></i> Results / Report
@@ -808,9 +756,8 @@
             <span class="results-status" id="resultsStatus"><i class="fas fa-circle status-dot"></i> Comparison Complete</span>
           </div>
           <div class="results-export" id="resultsExport">
-            <span class="results-export-label">Export:</span>
-            <button type="button" class="btn-export btn-export-html" id="exportHtmlBtn" title="Download report as HTML"><i class="fas fa-file-code"></i> HTML</button>
-            <button type="button" class="btn-export btn-export-excel" id="exportExcelBtn" title="Download report as Excel"><i class="fas fa-file-excel"></i> Excel</button>
+            <button type="button" class="btn-export" id="exportHtmlBtn"><i class="fas fa-file-code"></i> HTML</button>
+            <button type="button" class="btn-export" id="exportExcelBtn"><i class="fas fa-file-excel"></i> Excel</button>
           </div>
         </div>
         <div class="results-validation-tabs">
@@ -859,43 +806,6 @@
             <div class="results-summary-wrap">
               <div class="results-summary" id="summary"></div>
             </div>
-            <div class="cell-level-results">
-              <div class="cell-level-header-row">
-                <h2 class="cell-level-title">Cell-Level Comparison</h2>
-                <p class="cell-level-subtitle">Filter by type and search across sheets and columns.</p>
-              </div>
-              <div class="cell-level-sheet-select">
-                <span class="option-group-label">Sheets</span>
-                <div class="cell-level-sheet-tabs" id="cellLevelSheetTabs" role="tablist"></div>
-                <span class="cell-level-sheet-badge" id="cellLevelSheetBadge">0 sheets</span>
-              </div>
-              <div class="cell-level-filters-row">
-                <div class="cell-level-tabs" role="tablist">
-                  <button type="button" class="cell-tab active" data-cell-filter="difference" role="tab" aria-selected="true"><i class="fas fa-triangle-exclamation"></i> <span class="cell-tab-label">Differences</span> <span class="cell-tab-count" id="cellCountDiff">0</span></button>
-                  <button type="button" class="cell-tab" data-cell-filter="missing" role="tab" aria-selected="false"><i class="fas fa-minus-circle"></i> <span class="cell-tab-label">Missing</span> <span class="cell-tab-count" id="cellCountMissing">0</span></button>
-                  <button type="button" class="cell-tab" data-cell-filter="additional" role="tab" aria-selected="false"><i class="fas fa-plus-circle"></i> <span class="cell-tab-label">Additional</span> <span class="cell-tab-count" id="cellCountAdditional">0</span></button>
-                </div>
-                <div class="cell-level-search-wrap">
-                  <input type="text" class="cell-level-search" id="cellLevelSearch" placeholder="Search…" aria-label="Search results">
-                  <p class="cell-level-found" id="cellLevelFound"></p>
-                </div>
-              </div>
-              <div class="table-wrap cell-level-table-wrap">
-                <table class="cell-level-table" id="cellLevelTable">
-                  <thead>
-                    <tr>
-                      <th>Sheet</th>
-                      <th>Row</th>
-                      <th>Column</th>
-                      <th><span class="th-dot expected-dot"></span> Expected</th>
-                      <th><span class="th-dot actual-dot"></span> Actual</th>
-                    </tr>
-                  </thead>
-                  <tbody id="cellLevelTableBody"></tbody>
-                </table>
-              </div>
-              <p class="cell-level-empty" id="cellLevelEmpty" style="display: none;">No rows match the selected filter. Try another filter or clear the search.</p>
-            </div>
             <section class="results-section added" id="added-section">
               <h2 id="added-title">Added rows</h2>
               <div class="table-wrap" id="added-wrap"></div>
@@ -908,6 +818,48 @@
               <h2 id="modified-title">Modified rows</h2>
               <div class="table-wrap" id="modified-wrap"></div>
             </section>
+            
+            <div class="cell-level-results">
+              <div class="cell-level-header-row">
+                <div>
+                  <h2 class="cell-level-title">Cell-Level Comparison Results</h2>
+                  <p class="cell-level-subtitle">Detailed view of differences, missing data, and additional data.</p>
+                </div>
+                <div class="cell-level-export-btns">
+                  <button type="button" class="btn-export" id="cellLevelExportHtmlBtn" title="Export cell-level results as HTML"><i class="fas fa-file-code"></i> HTML</button>
+                  <button type="button" class="btn-export" id="cellLevelExportExcelBtn" title="Export cell-level results as Excel"><i class="fas fa-file-excel"></i> Excel</button>
+                </div>
+              </div>
+              <div class="cell-level-sheet-select">
+                <span class="option-group-label"><i class="fas fa-table-cells" aria-hidden="true"></i> Select Sheet</span>
+                <div class="cell-level-sheet-tabs" id="cellLevelSheetTabs" role="tablist"></div>
+                <span class="cell-level-sheet-badge" id="cellLevelSheetBadge">0 sheets</span>
+              </div>
+              <div class="cell-level-tabs" role="tablist">
+                <button type="button" class="cell-tab active" data-cell-filter="difference" role="tab" aria-selected="true"><i class="fas fa-triangle-exclamation"></i> <span class="cell-tab-label">Differences</span> <span class="cell-tab-count" id="cellCountDiff">0</span></button>
+                <button type="button" class="cell-tab" data-cell-filter="missing" role="tab" aria-selected="false"><i class="fas fa-minus-circle"></i> <span class="cell-tab-label">Missing</span> <span class="cell-tab-count" id="cellCountMissing">0</span></button>
+                <button type="button" class="cell-tab" data-cell-filter="additional" role="tab" aria-selected="false"><i class="fas fa-plus-circle"></i> <span class="cell-tab-label">Additional</span> <span class="cell-tab-count" id="cellCountAdditional">0</span></button>
+              </div>
+              <div class="cell-level-search-row">
+                <input type="text" class="cell-level-search" id="cellLevelSearch" placeholder="Search by sheet or column name..." aria-label="Search results">
+                <p class="cell-level-found" id="cellLevelFound">Found 0 cell differences</p>
+              </div>
+              <div class="table-wrap cell-level-table-wrap">
+                <table class="cell-level-table" id="cellLevelTable">
+                  <thead>
+                    <tr>
+                      <th>Sheet Name</th>
+                      <th>Row</th>
+                      <th>Column Name</th>
+                      <th><span class="th-dot expected-dot"></span> Expected Value</th>
+                      <th><span class="th-dot actual-dot"></span> Actual Value</th>
+                    </tr>
+                  </thead>
+                  <tbody id="cellLevelTableBody"></tbody>
+                </table>
+              </div>
+              <p class="cell-level-empty" id="cellLevelEmpty" style="display: none;">No rows match the selected filter. Try another tab or clear the search.</p>
+            </div>
           </div>
         </div>
       </div>
@@ -983,6 +935,7 @@
       const sheetToCompare = document.getElementById('sheetToCompare');
       const keyOptionGroup = document.getElementById('keyOptionGroup');
       const enableExportToggle = document.getElementById('enableExportToggle');
+      const cellLevelExportBtns = document.querySelector('.cell-level-export-btns');
       const previewPlaceholderText = 'Upload a file to see preview.';
       
      let expectedSheetNames = [];
@@ -1116,7 +1069,15 @@ let lastSheetCountData = null; // store sheet count comparison for HTML export
           }
           if (isExpected) {
             expectedSheetNames = sheetNames.slice();
-            updateSheetSelectOptions(sheetNames);
+            if (sheetToCompare && sheetNames.length) {
+              sheetToCompare.innerHTML = '<option value="">Choose a sheet to compare</option>';
+              sheetNames.forEach((name, i) => {
+                const opt = document.createElement('option');
+                opt.value = i;
+                opt.textContent = name;
+                sheetToCompare.appendChild(opt);
+              });
+            }
             rebuildSheetTabs(0);
           } else {
             actualSheetNames = sheetNames.slice();
@@ -1149,7 +1110,6 @@ let lastSheetCountData = null; // store sheet count comparison for HTML export
       sheetToCompare.addEventListener('change', function() {
         var f = expectedFile.files && expectedFile.files[0];
         if (!f || !sheetToCompare.value || sheetToCompare.value === '') return;
-        if (sheetToCompare.value === 'all') return;
         fetchPreview(f, parseInt(sheetToCompare.value, 10)).then(function(data) {
           if (data && data.columns && data.columns.length) fillKeyColumnSelect(data.columns);
         });
@@ -1271,8 +1231,8 @@ let lastSheetCountData = null; // store sheet count comparison for HTML export
           return 0;
         }
         modifiedWrap.innerHTML = modifiedRows.map(row =>
-          '<div class="modified-row"><div class="id">' + (row.Sheet ? '<span class="sheet-tag">' + escapeHtml(row.Sheet) + '</span> ' : '') + 'ID: ' + escapeHtml(row.id) + '</div>' +
-          (row.changes || []).map(ch => '<div class="change"><strong>' + escapeHtml(ch.column) + '</strong>: <span class="old">' + escapeHtml(String(ch.old_value ?? '')) + '</span> → <span class="new">' + escapeHtml(String(ch.new_value ?? '')) + '</span></div>').join('') +
+          '<div class="modified-row"><div class="id">ID: ' + escapeHtml(row.id) + '</div>' +
+          row.changes.map(ch => '<div class="change"><strong>' + escapeHtml(ch.column) + '</strong>: <span class="old">' + escapeHtml(String(ch.old_value ?? '')) + '</span> → <span class="new">' + escapeHtml(String(ch.new_value ?? '')) + '</span></div>').join('') +
           '</div>'
         ).join('');
         return modifiedRows.length;
@@ -1336,7 +1296,6 @@ let lastSheetCountData = null; // store sheet count comparison for HTML export
         var tbody = document.getElementById('cellLevelTableBody');
         var foundEl = document.getElementById('cellLevelFound');
         var emptyEl = document.getElementById('cellLevelEmpty');
-        var tableWrap = document.querySelector('.cell-level-table-wrap');
         var labels = { difference: 'cell differences', missing: 'missing cells', additional: 'additional cells' };
         // Filter by selected sheet
         var sheetSelect = document.getElementById('sheetToCompare');
@@ -1349,16 +1308,13 @@ let lastSheetCountData = null; // store sheet count comparison for HTML export
             filtered = filtered.filter(function(r) { return r.sheetName === selectedSheetName; });
           }
         }
-        var label = labels[cellLevelFilter] || '';
-        foundEl.textContent = filtered.length === 0 ? '' : 'Found ' + filtered.length + ' ' + label;
+        foundEl.textContent = 'Found ' + filtered.length + ' ' + (labels[cellLevelFilter] || '');
         if (filtered.length === 0) {
           tbody.innerHTML = '';
           emptyEl.style.display = 'block';
-          if (tableWrap) tableWrap.style.display = 'none';
           return;
         }
         emptyEl.style.display = 'none';
-        if (tableWrap) tableWrap.style.display = '';
         tbody.innerHTML = filtered.map(function(r) {
           var exp = r.expected != null && r.expected !== '' ? '<span class="cell-pill expected">' + escapeHtml(String(r.expected)) + '</span>' : '<span class="cell-pill missing">' + escapeHtml(String(r.expected === '\u2014' ? '\u2014' : r.expected || '')) + '</span>';
           var act = r.actual != null && r.actual !== '' && r.actual !== '\u2014' ? '<span class="cell-pill actual">' + escapeHtml(String(r.actual)) + '</span>' : '<span class="cell-pill missing">' + escapeHtml(String(r.actual === '\u2014' ? '\u2014' : r.actual || '')) + '</span>';
@@ -1408,7 +1364,7 @@ let lastSheetCountData = null; // store sheet count comparison for HTML export
           var badge = count == null ? '' : (isOk ? '<span class="sheet-tab-count"><i class="fas fa-check"></i></span>' : '<span class="sheet-tab-count">' + count + '</span>');
           var activeClass = i === activeIndex ? ' active' : '';
           var okClass = isOk ? ' sheet-ok' : '';
-          return '<button type="button" class="cell-level-sheet-tab' + activeClass + okClass + '" data-sheet-idx="' + i + '"><i class="fas fa-file-lines" aria-hidden="true"></i> ' + escapeHtml(name) + (badge ? ' ' + badge : '') + '</button>';
+          return '<button type="button" class="cell-level-sheet-tab' + activeClass + okClass + '" data-sheet-idx="' + i + '"><i class="fas fa-table-cells" aria-hidden="true"></i> ' + escapeHtml(name) + (badge ? ' ' + badge : '') + '</button>';
         }).join('');
         tabsEl.querySelectorAll('.cell-level-sheet-tab').forEach(function(btn) {
           btn.addEventListener('click', function() {
@@ -1486,6 +1442,7 @@ let lastSheetCountData = null; // store sheet count comparison for HTML export
       function applyExportVisibility() {
         var on = enableExportToggle && enableExportToggle.checked;
         if (resultsExport) resultsExport.style.display = on ? 'flex' : 'none';
+        if (cellLevelExportBtns) cellLevelExportBtns.style.display = on ? 'flex' : 'none';
       }
       if (enableExportToggle) {
         enableExportToggle.addEventListener('change', applyExportVisibility);
@@ -1675,6 +1632,41 @@ let lastSheetCountData = null; // store sheet count comparison for HTML export
           .catch(function(e) { alert(e.message || 'Export failed'); });
       });
 
+      function getCellLevelExportRows() {
+        return filterCellLevelRows();
+      }
+      document.getElementById('cellLevelExportHtmlBtn').addEventListener('click', function() {
+        var rows = getCellLevelExportRows();
+        var tableRows = rows.map(function(r) {
+          var exp = r.expected != null && r.expected !== '' ? escapeHtml(String(r.expected)) : (r.expected === '\u2014' ? '\u2014' : escapeHtml(String(r.expected || '')));
+          var act = r.actual != null && r.actual !== '' && r.actual !== '\u2014' ? escapeHtml(String(r.actual)) : (r.actual === '\u2014' ? '\u2014' : escapeHtml(String(r.actual || '')));
+          return '<tr><td>' + escapeHtml(r.sheetName) + '</td><td>' + escapeHtml(String(r.row)) + '</td><td>' + escapeHtml(r.column) + '</td><td>' + exp + '</td><td>' + act + '</td></tr>';
+        });
+        var html = '<!DOCTYPE html><html><head><meta charset="utf-8"><title>Cell-Level Comparison Report</title><style>table{border-collapse:collapse;width:100%;}th,td{border:1px solid #ddd;padding:8px;text-align:left;}th{background:#f1f5f9;}</style></head><body>' +
+          '<h1>Cell-Level Comparison Results</h1><p>Exported ' + rows.length + ' row(s). Filter: ' + escapeHtml(cellLevelFilter) + '</p>' +
+          '<table><thead><tr><th>Sheet Name</th><th>Row</th><th>Column Name</th><th>Expected Value</th><th>Actual Value</th></tr></thead><tbody>' + tableRows.join('') + '</tbody></table></body></html>';
+        var blob = new Blob([html], { type: 'text/html' });
+        var url = URL.createObjectURL(blob);
+        window.open(url, '_blank');
+        setTimeout(function() { URL.revokeObjectURL(url); }, 30000);
+      });
+      document.getElementById('cellLevelExportExcelBtn').addEventListener('click', function() {
+        var rows = getCellLevelExportRows();
+        if (rows.length === 0) { alert('No cell-level data to export. Run a comparison and ensure Cell Validation has results.'); return; }
+        fetch('/api/export-cell-level-excel', {
+          method: 'POST',
+          headers: { 'Content-Type': 'application/json' },
+          body: JSON.stringify({ rows: rows })
+        })
+          .then(function(r) { if (!r.ok) return r.json().then(function(d) { throw new Error(d.error || 'Export failed'); }); return r.blob(); })
+          .then(function(blob) {
+            var url = URL.createObjectURL(blob);
+            window.open(url, '_blank');
+            setTimeout(function() { URL.revokeObjectURL(url); }, 30000);
+          })
+          .catch(function(e) { alert(e.message || 'Export failed'); });
+      });
+
       async function runSpecificComparison(sheetIndex) {
         const f1 = expectedFile.files?.[0];
         const f2 = actualFile.files?.[0];
@@ -1695,54 +1687,6 @@ let lastSheetCountData = null; // store sheet count comparison for HTML export
         const res = await fetch('/api/compare', { method: 'POST', body: formData });
         const data = await res.json();
         return { ok: res.ok, data, sheetIndex: sheetIndexVal };
-      }
-
-      async function fetchAndPopulateSheetValidation(f1, f2) {
-        if (!f1 || !f2) return;
-        try {
-          var formData = new FormData();
-          formData.set('expected_file', f1);
-          formData.set('actual_file', f2);
-          var res = await fetch('/api/compare-sheet-count', { method: 'POST', body: formData });
-          var data = await res.json();
-          if (!res.ok) return;
-          var expectedName = data.expected_filename || 'Expected file';
-          var actualName = data.actual_filename || 'Actual file';
-          document.getElementById('scExpectedLabel').textContent = expectedName;
-          document.getElementById('scActualLabel').textContent = actualName;
-          scExpected.textContent = data.expected_sheets;
-          scActual.textContent = data.actual_sheets;
-          var diff = data.expected_sheets - data.actual_sheets;
-          scDifference.textContent = (diff > 0 ? '+' : '') + diff;
-          scDifference.parentElement.classList.toggle('match', diff === 0);
-          var exp = data.sheet_names_expected || [];
-          var act = data.sheet_names_actual || [];
-          var setAct = new Set(act);
-          var setExp = new Set(exp);
-          var matched = exp.filter(function(n) { return setAct.has(n); });
-          var missing = exp.filter(function(n) { return !setAct.has(n); });
-          var additional = act.filter(function(n) { return !setExp.has(n); });
-          lastSheetCountData = {
-            expected_sheets: data.expected_sheets,
-            actual_sheets: data.actual_sheets,
-            expected_filename: data.expected_filename || 'Expected file',
-            actual_filename: data.actual_filename || 'Actual file',
-            sheet_names_expected: exp,
-            sheet_names_actual: act,
-            matched: matched,
-            missing: missing,
-            additional: additional,
-            timestamp: { date: resultsDate.textContent || new Date().toLocaleDateString(), time: resultsTime.textContent || new Date().toLocaleTimeString() }
-          };
-          function sheetLabel(c) { return c + ' sheet' + (c !== 1 ? 's' : ''); }
-          document.getElementById('presenceMatchedCount').textContent = sheetLabel(matched.length);
-          document.getElementById('presenceMissingCount').textContent = sheetLabel(missing.length);
-          document.getElementById('presenceAdditionalCount').textContent = sheetLabel(additional.length);
-          document.getElementById('presenceMatchedDesc').textContent = matched.length + ' sheet' + (matched.length !== 1 ? 's' : '') + ' found in both files.';
-          document.getElementById('presenceMatchedTags').innerHTML = matched.map(function(n) { return '<span class="presence-tag">' + escapeHtml(n) + '</span>'; }).join('') || '<span class="presence-desc">None</span>';
-          document.getElementById('presenceMissingTags').innerHTML = missing.map(function(n) { return '<span class="presence-tag">' + escapeHtml(n) + '</span>'; }).join('') || '<span class="presence-desc">None</span>';
-          document.getElementById('presenceAdditionalTags').innerHTML = additional.map(function(n) { return '<span class="presence-tag">' + escapeHtml(n) + '</span>'; }).join('') || '<span class="presence-desc">None</span>';
-        } catch (_) {}
       }
 
       async function runCompareForSheet(sheetIdx) {
@@ -1806,93 +1750,6 @@ let lastSheetCountData = null; // store sheet count comparison for HTML export
             cellRows: cellLevelRows.slice(),
             sheetName: sheetName
           };
-          await fetchAndPopulateSheetValidation(expectedFile.files?.[0], actualFile.files?.[0]);
-          tabSheetValidation.style.display = '';
-          tabCellValidation.style.display = '';
-          showValidationTab('cell');
-          resultsOut.style.display = 'block';
-          tabResults.click();
-        } catch (e) {
-          showResultsError({ error: e.message || 'Request failed', code: 'network' });
-        } finally {
-          runBtn.disabled = false;
-          runBtn.classList.remove('loading');
-          if (btnText) btnText.textContent = 'Compare Files';
-          if (btnIcon) btnIcon.style.display = '';
-        }
-      }
-
-      async function runCompareAllSheets() {
-        const maxSheets = Math.min(expectedSheetNames.length || 0, actualSheetNames.length || 0);
-        if (maxSheets === 0) {
-          showResultsError({ error: 'No sheets to compare.' });
-          resultsOut.style.display = 'none';
-          return;
-        }
-        runBtn.disabled = true;
-        runBtn.classList.add('loading');
-        var btnText = runBtn.querySelector('.btn-text');
-        var btnIcon = runBtn.querySelector('.fa-play');
-        if (btnText) btnText.textContent = 'Comparing…';
-        if (btnIcon) btnIcon.style.display = 'none';
-        try {
-          var mergedSummary = { added_count: 0, removed_count: 0, modified_count: 0 };
-          var mergedAdded = [];
-          var mergedRemoved = [];
-          var mergedModified = [];
-          var allCellRows = [];
-          var firstConfig = null;
-          for (var i = 0; i < maxSheets; i++) {
-            var result = await runSpecificComparison(i);
-            if (!result) { showResultsError({ error: 'Comparison failed for sheet ' + (i + 1) + '.' }); resultsOut.style.display = 'none'; return; }
-            var ok = result.ok, data = result.data;
-            if (!ok) { showResultsError(data); resultsOut.style.display = 'none'; return; }
-            if (!firstConfig) firstConfig = data.config || {};
-            var sheetName = (expectedSheetNames[i] != null) ? expectedSheetNames[i] : ('Sheet' + (i + 1));
-            if (data.summary) {
-              mergedSummary.added_count += data.summary.added_count || 0;
-              mergedSummary.removed_count += data.summary.removed_count || 0;
-              mergedSummary.modified_count += data.summary.modified_count || 0;
-            }
-            (data.added_rows || []).forEach(function(r) { mergedAdded.push(Object.assign({ Sheet: sheetName }, r)); });
-            (data.removed_rows || []).forEach(function(r) { mergedRemoved.push(Object.assign({ Sheet: sheetName }, r)); });
-            (data.modified_rows || []).forEach(function(row) { mergedModified.push(Object.assign({ Sheet: sheetName }, row)); });
-            if (data.config) data.config.sheet_name = sheetName;
-            buildCellLevelRows(data);
-            allCellRows = allCellRows.concat(cellLevelRows);
-          }
-          cellLevelRows = allCellRows;
-          hideResultsError();
-          setResultsDateTime();
-          applyExportVisibility();
-          specificResultContent.style.display = 'block';
-          var config = firstConfig || {};
-          configText.innerHTML = 'Comparing <code>' + escapeHtml(String(config.file1 || 'file1')) + '</code> vs <code>' + escapeHtml(String(config.file2 || 'file2')) + '</code> (all ' + maxSheets + ' sheet' + (maxSheets !== 1 ? 's' : '') + ')' +
-            (config.mode === 'position' ? ' (by row position)' : ' (primary key: ' + escapeHtml(String(config.key || 'EMP_ID')) + ')');
-          renderSummary(mergedSummary);
-          if (addedWrap) { var nAdded = renderTable(mergedAdded, addedWrap); if (addedTitle) addedTitle.textContent = 'Added rows' + (nAdded ? ' (' + nAdded + ')' : ''); }
-          if (removedWrap) { var nRemoved = renderTable(mergedRemoved, removedWrap); if (removedTitle) removedTitle.textContent = 'Removed rows' + (nRemoved ? ' (' + nRemoved + ')' : ''); }
-          if (modifiedWrap) { var nModified = renderModified(mergedModified); if (modifiedTitle) modifiedTitle.textContent = 'Modified rows' + (nModified ? ' (' + nModified + ')' : ''); }
-          var counts = getCellLevelCounts();
-          document.getElementById('cellCountDiff').textContent = counts.difference;
-          document.getElementById('cellCountMissing').textContent = counts.missing;
-          document.getElementById('cellCountAdditional').textContent = counts.additional;
-          sheetTabNames = expectedSheetNames.slice(0, maxSheets);
-          sheetTabCounts = {};
-          for (var j = 0; j < sheetTabNames.length; j++) {
-            var name = sheetTabNames[j];
-            sheetTabCounts[name] = allCellRows.filter(function(r) { return r.sheetName === name; }).reduce(function(acc, r) { return acc + 1; }, 0);
-          }
-          buildSheetTabs(sheetTabNames, 0);
-          cellLevelFilter = 'difference';
-          document.querySelectorAll('.cell-tab').forEach(function(t) {
-            t.classList.toggle('active', t.getAttribute('data-cell-filter') === 'difference');
-            t.setAttribute('aria-selected', t.getAttribute('data-cell-filter') === 'difference');
-          });
-          document.getElementById('cellLevelSearch').value = '';
-          renderCellLevelTable();
-          lastCompareData = { data: { summary: mergedSummary, added_rows: mergedAdded, removed_rows: mergedRemoved, modified_rows: mergedModified, config: config }, counts: counts, cellRows: cellLevelRows.slice(), sheetName: 'All Sheets' };
-          await fetchAndPopulateSheetValidation(expectedFile.files?.[0], actualFile.files?.[0]);
           tabSheetValidation.style.display = '';
           tabCellValidation.style.display = '';
           showValidationTab('cell');
@@ -1982,12 +1839,8 @@ let lastSheetCountData = null; // store sheet count comparison for HTML export
               tabResults.click();
             }
           } else {
-            if (sheetToCompare && sheetToCompare.value === 'all') {
-              await runCompareAllSheets();
-            } else {
-              const sheetIdx = (sheetToCompare && sheetToCompare.value !== '') ? parseInt(sheetToCompare.value, 10) : 0;
-              await runCompareForSheet(isNaN(sheetIdx) ? 0 : sheetIdx);
-            }
+            const sheetIdx = (sheetToCompare && sheetToCompare.value !== '') ? parseInt(sheetToCompare.value, 10) : 0;
+            await runCompareForSheet(sheetIdx);
           }
         } catch (e) {
           showResultsError({ error: e.message || 'Request failed', code: 'network' });
@@ -1999,32 +1852,30 @@ let lastSheetCountData = null; // store sheet count comparison for HTML export
         }
       });
 
-      // Sheet selection: default to "All Sheets" when 2+ sheets (no need to pick one manually)
+      // Sheet selection logic: default to 'All Sheets' if 2 sheets, else show specific
       function updateSheetSelectOptions(sheetNames) {
-        const sel = document.getElementById('sheetToCompare');
-        if (!sel) return;
-        sel.innerHTML = '';
-        if (!sheetNames || sheetNames.length === 0) {
-          const opt = document.createElement('option');
-          opt.value = '';
-          opt.textContent = 'Choose a sheet to compare';
-          sel.appendChild(opt);
-          return;
-        }
-        if (sheetNames.length >= 2) {
+        const sheetToCompare = document.getElementById('sheetToCompare');
+        sheetToCompare.innerHTML = '';
+        if (sheetNames.length === 2) {
           const allOpt = document.createElement('option');
           allOpt.value = 'all';
           allOpt.textContent = 'All Sheets';
           allOpt.selected = true;
-          sel.appendChild(allOpt);
+          sheetToCompare.appendChild(allOpt);
         }
         sheetNames.forEach((name, i) => {
           const opt = document.createElement('option');
           opt.value = i;
           opt.textContent = name;
-          sel.appendChild(opt);
+          sheetToCompare.appendChild(opt);
         });
       }
+
+     
+
+      // When files are uploaded, call updateSheetSelectOptions with sheet names
+      // Example usage after file upload:
+      // updateSheetSelectOptions(['Sheet1', 'Sheet2']);
 
      
     })();
