@@ -1,12 +1,14 @@
 {
   "info": {
     "name": "Excel Comparison API",
-    "description": "Compare two Excel files: sheet count, cell-level comparison, preview, and export to Excel.",
+    "description": "Compare two Excel files: sheet count, cell-level comparison, preview, and export to Excel.\n\n**Base URL:** Default is the deployed API (https://excel.qualityoutsidethebox.org). For local dev, set collection variable `baseUrl` to `http://localhost:5000`. For file uploads, choose files in the Body tab. Default `primaryKey` is `EMP_ID`; use `none` for position-based comparison.",
     "schema": "https://schema.getpostman.com/json/collection/v2.1.0/collection.json",
     "_exporter_id": "excel-compare"
   },
   "variable": [
-    { "key": "baseUrl", "value": "http://localhost:5000", "type": "string" }
+    { "key": "baseUrl", "value": "https://excel.qualityoutsidethebox.org", "type": "string" },
+    { "key": "primaryKey", "value": "EMP_ID", "type": "string" },
+    { "key": "sheetIndex", "value": "0", "type": "string" }
   ],
   "item": [
     {
@@ -24,8 +26,28 @@
               ]
             },
             "url": "{{baseUrl}}/api/file-info",
-            "description": "Return sheet count and sheet names for an uploaded Excel file."
-          }
+            "description": "Returns sheet count and sheet names for an uploaded Excel file. Required for UI to know how many sheets and their names."
+          },
+          "event": [
+            {
+              "listen": "test",
+              "script": {
+                "exec": [
+                  "pm.test('Status is 200 or 400', function() {",
+                  "    pm.expect(pm.response.code).to.be.oneOf([200, 400]);",
+                  "});",
+                  "if (pm.response.code === 200) {",
+                  "    pm.test('Response has sheets info', function() {",
+                  "        const j = pm.response.json();",
+                  "        pm.expect(j).to.have.property('sheets');",
+                  "        pm.expect(j).to.have.property('sheet_names');",
+                  "    });",
+                  "}"
+                ],
+                "type": "text/javascript"
+              }
+            }
+          ]
         },
         {
           "name": "Preview file",
@@ -36,12 +58,32 @@
               "mode": "formdata",
               "formdata": [
                 { "key": "file", "type": "file", "src": "", "description": "Excel file" },
-                { "key": "sheet", "value": "0", "type": "text", "description": "Sheet index (0-based)" }
+                { "key": "sheet", "value": "{{sheetIndex}}", "type": "text", "description": "Sheet index (0-based)" }
               ]
             },
             "url": "{{baseUrl}}/api/preview",
-            "description": "Return first N rows of an uploaded Excel file for preview."
-          }
+            "description": "Returns first N rows of an uploaded Excel file for preview. Use `sheet` to pick which sheet (0-based index)."
+          },
+          "event": [
+            {
+              "listen": "test",
+              "script": {
+                "exec": [
+                  "pm.test('Status is 200 or 400', function() {",
+                  "    pm.expect(pm.response.code).to.be.oneOf([200, 400]);",
+                  "});",
+                  "if (pm.response.code === 200) {",
+                  "    pm.test('Response has columns and rows', function() {",
+                  "        const j = pm.response.json();",
+                  "        pm.expect(j).to.have.property('columns');",
+                  "        pm.expect(j).to.have.property('rows');",
+                  "    });",
+                  "}"
+                ],
+                "type": "text/javascript"
+              }
+            }
+          ]
         }
       ]
     },
@@ -61,8 +103,29 @@
               ]
             },
             "url": "{{baseUrl}}/api/compare-sheet-count",
-            "description": "Compare only the number of sheets in two uploaded files."
-          }
+            "description": "Compares only the number of sheets in two uploaded files. Returns expected_sheets, actual_sheets, match, and sheet names for both. Aliases: file1/file2 also accepted."
+          },
+          "event": [
+            {
+              "listen": "test",
+              "script": {
+                "exec": [
+                  "pm.test('Status is 200 or 400', function() {",
+                  "    pm.expect(pm.response.code).to.be.oneOf([200, 400]);",
+                  "});",
+                  "if (pm.response.code === 200) {",
+                  "    pm.test('Response has expected_sheets and actual_sheets', function() {",
+                  "        const j = pm.response.json();",
+                  "        pm.expect(j).to.have.property('expected_sheets');",
+                  "        pm.expect(j).to.have.property('actual_sheets');",
+                  "        pm.expect(j).to.have.property('match');",
+                  "    });",
+                  "}"
+                ],
+                "type": "text/javascript"
+              }
+            }
+          ]
         }
       ]
     },
@@ -70,26 +133,48 @@
       "name": "Compare",
       "item": [
         {
-          "name": "Compare (GET - default files)",
+          "name": "Compare (GET – default files)",
           "request": {
             "method": "GET",
             "header": [],
             "url": {
-              "raw": "{{baseUrl}}/api/compare?key=EMP_ID&sheet=0",
+              "raw": "{{baseUrl}}/api/compare?key={{primaryKey}}&sheet={{sheetIndex}}",
               "host": ["{{baseUrl}}"],
               "path": ["api", "compare"],
               "query": [
-                { "key": "key", "value": "EMP_ID", "description": "Primary key column; use 'none' for position-based" },
-                { "key": "sheet", "value": "0", "description": "Sheet index" },
-                { "key": "expected_sheet", "value": "0", "disabled": true },
-                { "key": "actual_sheet", "value": "0", "disabled": true }
+                { "key": "key", "value": "{{primaryKey}}", "description": "Primary key column; use 'none' for position-based" },
+                { "key": "sheet", "value": "{{sheetIndex}}", "description": "Sheet index for both files (when expected_sheet/actual_sheet not set)" },
+                { "key": "expected_sheet", "value": "{{sheetIndex}}", "description": "Sheet index in expected file (overrides sheet)" },
+                { "key": "actual_sheet", "value": "{{sheetIndex}}", "description": "Sheet index in actual file (overrides sheet)" },
+                { "key": "file1", "value": "input/file1.xlsx", "disabled": true, "description": "Server path to expected file (optional)" },
+                { "key": "file2", "value": "input/file2.xlsx", "disabled": true, "description": "Server path to actual file (optional)" }
               ]
             },
-            "description": "Run comparison using default files (input/file1.xlsx, input/file2.xlsx)."
-          }
+            "description": "Runs comparison using **default server files** (input/file1.xlsx, input/file2.xlsx). Ensure these files exist on the server. For uploaded files, use the POST request below."
+          },
+          "event": [
+            {
+              "listen": "test",
+              "script": {
+                "exec": [
+                  "pm.test('Status is 200 or 400', function() {",
+                  "    pm.expect(pm.response.code).to.be.oneOf([200, 400]);",
+                  "});",
+                  "if (pm.response.code === 200) {",
+                  "    pm.test('Response has comparison structure', function() {",
+                  "        const j = pm.response.json();",
+                  "        pm.expect(j).to.have.property('config');",
+                  "        if (j.summary !== undefined) pm.expect(j).to.have.property('summary');",
+                  "    });",
+                  "}"
+                ],
+                "type": "text/javascript"
+              }
+            }
+          ]
         },
         {
-          "name": "Compare (POST - upload files)",
+          "name": "Compare (POST – upload files)",
           "request": {
             "method": "POST",
             "header": [],
@@ -98,14 +183,33 @@
               "formdata": [
                 { "key": "expected_file", "type": "file", "src": "", "description": "Expected Excel" },
                 { "key": "actual_file", "type": "file", "src": "", "description": "Actual Excel" },
-                { "key": "key", "value": "EMP_ID", "type": "text", "description": "Primary key; use 'none' for position-based" },
-                { "key": "expected_sheet", "value": "0", "type": "text" },
-                { "key": "actual_sheet", "value": "0", "type": "text" }
+                { "key": "key", "value": "{{primaryKey}}", "type": "text", "description": "Primary key; use 'none' for position-based" },
+                { "key": "expected_sheet", "value": "{{sheetIndex}}", "type": "text", "description": "Sheet index in expected file (0-based)" },
+                { "key": "actual_sheet", "value": "{{sheetIndex}}", "type": "text", "description": "Sheet index in actual file (0-based)" }
               ]
             },
             "url": "{{baseUrl}}/api/compare",
-            "description": "Run comparison with uploaded expected_file and actual_file."
-          }
+            "description": "Runs comparison with uploaded expected_file and actual_file. Same logic as GET but files come from the request."
+          },
+          "event": [
+            {
+              "listen": "test",
+              "script": {
+                "exec": [
+                  "pm.test('Status is 200 or 400', function() {",
+                  "    pm.expect(pm.response.code).to.be.oneOf([200, 400]);",
+                  "});",
+                  "if (pm.response.code === 200) {",
+                  "    pm.test('Response has config', function() {",
+                  "        const j = pm.response.json();",
+                  "        pm.expect(j).to.have.property('config');",
+                  "    });",
+                  "}"
+                ],
+                "type": "text/javascript"
+              }
+            }
+          ]
         }
       ]
     },
@@ -122,14 +226,33 @@
               "formdata": [
                 { "key": "expected_file", "type": "file", "src": "", "description": "Expected Excel" },
                 { "key": "actual_file", "type": "file", "src": "", "description": "Actual Excel" },
-                { "key": "key", "value": "EMP_ID", "type": "text" },
-                { "key": "expected_sheet", "value": "0", "type": "text" },
-                { "key": "actual_sheet", "value": "0", "type": "text" }
+                { "key": "key", "value": "{{primaryKey}}", "type": "text", "description": "Primary key; use 'none' for position-based" },
+                { "key": "expected_sheet", "value": "{{sheetIndex}}", "type": "text", "description": "Sheet index (expected)" },
+                { "key": "actual_sheet", "value": "{{sheetIndex}}", "type": "text", "description": "Sheet index (actual)" }
               ]
             },
             "url": "{{baseUrl}}/api/export-excel",
-            "description": "Run comparison and download result as Excel (comparison_result.xlsx)."
-          }
+            "description": "Runs the same comparison as /api/compare and returns the result as an Excel download (comparison_result.xlsx). Requires both files uploaded."
+          },
+          "event": [
+            {
+              "listen": "test",
+              "script": {
+                "exec": [
+                  "pm.test('Status is 200 or 400', function() {",
+                  "    pm.expect(pm.response.code).to.be.oneOf([200, 400]);",
+                  "});",
+                  "if (pm.response.code === 200) {",
+                  "    pm.test('Response is Excel', function() {",
+                  "        const ct = pm.response.headers.get('Content-Type') || '';",
+                  "        pm.expect(ct).to.include('spreadsheet');",
+                  "    });",
+                  "}"
+                ],
+                "type": "text/javascript"
+              }
+            }
+          ]
         },
         {
           "name": "Export cell-level to Excel",
@@ -143,8 +266,27 @@
               "raw": "{\n  \"rows\": [\n    {\n      \"sheetName\": \"Sheet1\",\n      \"row\": 1,\n      \"column\": \"ColumnName\",\n      \"expected\": \"expected value\",\n      \"actual\": \"actual value\"\n    }\n  ]\n}"
             },
             "url": "{{baseUrl}}/api/export-cell-level-excel",
-            "description": "Export cell-level comparison rows to Excel. JSON body: { \"rows\": [ { sheetName, row, column, expected, actual }, ... ] }."
-          }
+            "description": "Exports cell-level comparison rows to Excel. Send JSON body: { \"rows\": [ { \"sheetName\", \"row\", \"column\", \"expected\", \"actual\" }, ... ] }. Download: cell_level_comparison.xlsx."
+          },
+          "event": [
+            {
+              "listen": "test",
+              "script": {
+                "exec": [
+                  "pm.test('Status is 200 or 400', function() {",
+                  "    pm.expect(pm.response.code).to.be.oneOf([200, 400]);",
+                  "});",
+                  "if (pm.response.code === 200) {",
+                  "    pm.test('Response is Excel', function() {",
+                  "        const ct = pm.response.headers.get('Content-Type') || '';",
+                  "        pm.expect(ct).to.include('spreadsheet');",
+                  "    });",
+                  "}"
+                ],
+                "type": "text/javascript"
+              }
+            }
+          ]
         }
       ]
     },
@@ -157,8 +299,21 @@
             "method": "GET",
             "header": [],
             "url": "{{baseUrl}}/logo",
-            "description": "Serve the ABB logo image."
-          }
+            "description": "Serves the ABB logo image (image/webp). Used by the UI."
+          },
+          "event": [
+            {
+              "listen": "test",
+              "script": {
+                "exec": [
+                  "pm.test('Status is 200 or 404', function() {",
+                  "    pm.expect(pm.response.code).to.be.oneOf([200, 404]);",
+                  "});"
+                ],
+                "type": "text/javascript"
+              }
+            }
+          ]
         }
       ]
     }
